@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProductCategory {
+  MEN
+  WOMEN
+  KIDS
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  FULFILLED
+  REFUNDED
+}
+
+model Product {
+  id                 String          @id @default(cuid())
+  title              String
+  slug               String          @unique
+  description        String?
+  category           ProductCategory
+  price_kobo         Int
+  compare_at_kobo    Int?
+  currency           String          @default("NGN")
+  inventory_qty      Int             @default(0)
+  active             Boolean         @default(true)
+  tags               String[]
+  images             String[]
+  created_at         DateTime        @default(now())
+  updated_at         DateTime        @updatedAt
+
+  order_items        OrderItem[]
+}
+
+model Order {
+  id                      String        @id @default(cuid())
+  order_number            String        @unique
+  status                  OrderStatus   @default(PENDING)
+  currency                String        @default("NGN")
+  subtotal_kobo           Int
+  shipping_kobo           Int
+  total_kobo              Int
+
+  customer_email          String
+  customer_phone          String?
+  shipping_address_json   Json
+
+  paystack_reference      String        @unique
+  paystack_transaction_id String?
+  paid_at                 DateTime?
+
+  created_at              DateTime      @default(now())
+  updated_at              DateTime      @updatedAt
+
+  items                   OrderItem[]
+  payment_events          PaymentEvent[]
+}
+
+model OrderItem {
+  id              String   @id @default(cuid())
+  order_id        String
+  product_id      String
+  title_snapshot  String
+  unit_price_kobo Int
+  quantity        Int
+  variant_json    Json?
+  line_total_kobo Int
+
+  order           Order    @relation(fields: [order_id], references: [id])
+  product         Product  @relation(fields: [product_id], references: [id])
+
+  @@index([order_id])
+  @@index([product_id])
+}
+
+model PaymentEvent {
+  id          String   @id @default(cuid())
+  order_id    String
+  reference   String
+  event_type  String
+  payload_json Json
+  created_at  DateTime @default(now())
+
+  order       Order    @relation(fields: [order_id], references: [id])
+
+  @@index([order_id])
+  @@index([reference])
+}
