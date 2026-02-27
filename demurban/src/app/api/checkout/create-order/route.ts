@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     });
 
     const productMap = new Map<string, typeof products[number]>(
-      products.map((p) => [p.id, p])
+      products.map((p: typeof products[number]) => [p.id, p])
     );
 
     let subtotal = 0;
