@@ -45,7 +45,9 @@ export async function POST(req: Request) {
       where: { id: { in: productIds }, active: true },
     });
 
-    const productMap = new Map(products.map((p: typeof products[number]) => [p.id, p]));
+    const productMap = new Map<string, typeof products[number]>(
+      products.map((p) => [p.id, p])
+    );
 
     let subtotal = 0;
     const orderItems = parsed.items.map((i) => {
