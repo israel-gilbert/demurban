@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Search } from "lucide-react";
 import ProductGrid from "@/components/ProductGrid";
+import CollectionsShowcase from "@/components/CollectionsShowcase";
 import { fetchProducts } from "@/lib/server-actions";
 import type { Product } from "@/lib/types";
 
@@ -21,6 +22,53 @@ export default async function HomePage() {
   const featured = products.slice(0, 8);
   const newArrivals = products.filter((p) => p.tags?.includes("new")).slice(0, 4);
   const heroProducts = products.slice(0, 7);
+
+  // Create collection data from products
+  const collections = [
+    {
+      id: "essentials",
+      name: "Core Essentials",
+      description: "Premium basics designed for everyday wear. Perfect foundation pieces for any wardrobe.",
+      priceRange: { min: 45, max: 120 },
+      image: "/images/placeholder.jpg",
+      href: "/shop?tag=essentials",
+      tag: "Unisex",
+    },
+    {
+      id: "limited",
+      name: "Limited Editions",
+      description: "Exclusive pieces in limited quantities. Get them before they're gone.",
+      priceRange: { min: 65, max: 180 },
+      image: "/images/placeholder.jpg",
+      href: "/shop?tag=limited",
+      tag: "Limited",
+    },
+    {
+      id: "trending",
+      name: "Trending Now",
+      description: "The hottest pieces right now. What everyone's wearing.",
+      priceRange: { min: 55, max: 150 },
+      image: "/images/placeholder.jpg",
+      href: "/shop?tag=trending",
+      tag: "Trending",
+    },
+    {
+      id: "seasonal",
+      name: "Seasonal Collection",
+      description: "Fresh styles for the season. Stay ahead of the curve.",
+      priceRange: { min: 50, max: 160 },
+      image: "/images/placeholder.jpg",
+      href: "/shop?tag=seasonal",
+    },
+    {
+      id: "bestsellers",
+      name: "Best Sellers",
+      description: "Customer favorites that keep coming back. Tested and loved by the community.",
+      priceRange: { min: 40, max: 140 },
+      image: "/images/placeholder.jpg",
+      href: "/shop?sort=popular",
+    },
+  ];
 
   return (
     <div className="space-y-0">
@@ -98,35 +146,8 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* Featured Products Section */}
-      <section className="mx-auto w-full max-w-7xl px-4 py-16 md:px-6 md:py-20 lg:px-8">
-        <div className="flex items-end justify-between gap-4 mb-8">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Curated Selection</p>
-            <h2 className="mt-2 text-2xl font-bold uppercase tracking-wider font-[var(--font-oswald)]">
-              Featured Pieces
-            </h2>
-          </div>
-          <Link
-            href="/shop"
-            className="group flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-accent"
-          >
-            View all
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
-        </div>
-        {error ? (
-          <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-8 text-center">
-            <p className="text-sm text-muted-foreground">{error}</p>
-          </div>
-        ) : featured.length > 0 ? (
-          <ProductGrid products={featured} />
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">No products available</p>
-          </div>
-        )}
-      </section>
+      {/* Collections Showcase - Masonry Grid */}
+      <CollectionsShowcase collections={collections} />
 
       {/* New Arrivals */}
       {newArrivals.length > 0 && (
