@@ -63,6 +63,10 @@ model Order {
 
   items                   OrderItem[]
   payment_events          PaymentEvent[]
+
+  @@index([status])
+  @@index([customer_email])
+  @@index([created_at])
 }
 
 model OrderItem {

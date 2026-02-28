@@ -1,25 +1,68 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { rateLimit, getClientIp } from "@/lib/rate-limiter";
+import { safeErrorResponse, logSecurityEvent } from "@/lib/security";
 
 const Schema = z.object({
-  orderId: z.string().min(1),
+  orderId: z.string().min(1).max(50).cuid(),
 });
 
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   const secretKey = process.env.PAYSTACK_SECRET_KEY;
   const appUrl = process.env.APP_URL;
+  const clientIp = getClientIp(request);
 
-  if (!secretKey) return NextResponse.json({ error: "Missing PAYSTACK_SECRET_KEY" }, { status: 500 });
-  if (!appUrl) return NextResponse.json({ error: "Missing APP_URL" }, { status: 500 });
+  if (!secretKey) {
+    logSecurityEvent("missing_env_var", { var: "PAYSTACK_SECRET_KEY" });
+    return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+  }
+
+  if (!appUrl) {
+    logSecurityEvent("missing_env_var", { var: "APP_URL" });
+    return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+  }
 
   try {
-    const body = await req.json();
+    // Rate limiting: IP-based (10 requests per 60 seconds)
+    const rateLimitKey = `paystack_init:${clientIp}`;
+    const rateLimitResult = await rateLimit(rateLimitKey, {
+      requests: parseInt(process.env.RATE_LIMIT_REQUESTS || "10"),
+      window: parseInt(process.env.RATE_LIMIT_WINDOW_MS || "60000"),
+    });
+
+    if (!rateLimitResult.success) {
+      logSecurityEvent("rate_limit_exceeded_paystack_init", {
+        ip: clientIp,
+        retryAfter: rateLimitResult.retryAfter,
+      });
+
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimitResult.retryAfter || 60),
+          },
+        }
+      );
+    }
+
+    const body = await request.json();
     const { orderId } = Schema.parse(body);
 
     const order = await prisma.order.findUnique({ where: { id: orderId } });
-    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    if (!order) {
+      logSecurityEvent("order_not_found", { orderId, ip: clientIp });
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+
     if (order.status !== "PENDING") {
+      logSecurityEvent("order_not_pending", {
+        orderId,
+        status: order.status,
+        ip: clientIp,
+      });
       return NextResponse.json({ error: "Order is not payable" }, { status: 400 });
     }
 
@@ -50,10 +93,23 @@ export async function POST(req: Request) {
           order_id: order.id,
           reference: order.paystack_reference,
           event_type: "PAYSTACK_INIT_FAILED",
-          payload_json: json,
+          payload_json: {
+            ...json,
+            _metadata: { ip: clientIp, timestamp: new Date().toISOString() },
+          },
         },
       });
-      return NextResponse.json({ error: json?.message ?? "Paystack init failed" }, { status: 400 });
+
+      logSecurityEvent("paystack_init_failed", {
+        orderId: order.id,
+        error: json?.message,
+        ip: clientIp,
+      });
+
+      return NextResponse.json(
+        { error: json?.message ?? "Paystack init failed" },
+        { status: 400 }
+      );
     }
 
     await prisma.paymentEvent.create({
@@ -65,8 +121,22 @@ export async function POST(req: Request) {
       },
     });
 
+    logSecurityEvent("paystack_init_success", {
+      orderId: order.id,
+      total: order.total_kobo,
+      ip: clientIp,
+    });
+
     return NextResponse.json({ authorizationUrl: json.data.authorization_url });
   } catch (err: any) {
-    return NextResponse.json({ error: err?.message ?? "Failed to initialize payment" }, { status: 400 });
+    logSecurityEvent("paystack_init_error", {
+      error: err?.message,
+      ip: clientIp,
+    });
+
+    return NextResponse.json(
+      safeErrorResponse(err),
+      { status: 400 }
+    );
   }
 }
