@@ -106,10 +106,10 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-foreground font-[var(--font-oswald)] uppercase">
-          Shop Collection
+          Shop
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Explore the DEM lifestyle. Where taste meets identity.
+          Unisex streetwear for everyone. Bold pieces designed without limits.
         </p>
       </div>
 

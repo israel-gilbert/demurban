@@ -65,28 +65,46 @@ export default async function HomePage() {
 
       {/* Categories Section */}
       <section className="mx-auto w-full max-w-7xl px-4 py-16 md:px-6 md:py-20 lg:px-8">
-        <div className="grid gap-4 md:grid-cols-3">
-          {[
-            { label: "Men", href: "/shop?category=MEN", desc: "Bold pieces for the modern man" },
-            { label: "Women", href: "/shop?category=WOMEN", desc: "Fierce styles that empower" },
-            { label: "Kids", href: "/shop?category=KIDS", desc: "Start them young in DEM" },
-          ].map((cat) => (
-            <Link
-              key={cat.label}
-              href={cat.href}
-              className="group relative overflow-hidden rounded-xl border border-border bg-card p-8 transition-all hover:border-accent/50 hover:shadow-lg hover:shadow-accent/5"
-            >
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Shop</p>
-              <h3 className="mt-2 text-2xl font-bold uppercase tracking-wider font-[var(--font-oswald)]">
-                {cat.label}
+        <div className="grid gap-8 md:grid-cols-2">
+          <Link
+            href="/shop"
+            className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-accent/10 to-background p-12 transition-all hover:border-accent/50 hover:shadow-lg hover:shadow-accent/5"
+          >
+            <div className="relative z-10">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Explore</p>
+              <h3 className="mt-4 text-3xl font-bold uppercase tracking-wider font-[var(--font-oswald)]">
+                Shop The Collection
               </h3>
-              <p className="mt-2 text-sm text-muted-foreground">{cat.desc}</p>
-              <div className="mt-4 flex items-center gap-2 text-sm font-medium text-accent">
-                Explore
+              <p className="mt-3 text-base text-muted-foreground">
+                Unisex streetwear for everyone. Bold pieces designed without limits.
+              </p>
+              <div className="mt-6 flex items-center gap-2 text-sm font-medium text-accent">
+                Browse Now
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </div>
-            </Link>
-          ))}
+            </div>
+            <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-accent/5 blur-3xl" />
+          </Link>
+
+          <Link
+            href="/about"
+            className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-background to-accent/5 p-12 transition-all hover:border-accent/50 hover:shadow-lg hover:shadow-accent/5"
+          >
+            <div className="relative z-10">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Our Story</p>
+              <h3 className="mt-4 text-3xl font-bold uppercase tracking-wider font-[var(--font-oswald)]">
+                About DEM
+              </h3>
+              <p className="mt-3 text-base text-muted-foreground">
+                Where taste meets identity. Built from the streets of Lagos.
+              </p>
+              <div className="mt-6 flex items-center gap-2 text-sm font-medium text-accent">
+                Learn More
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </div>
+            </div>
+            <div className="absolute -left-20 -bottom-20 h-40 w-40 rounded-full bg-accent/5 blur-3xl" />
+          </Link>
         </div>
       </section>
 

@@ -8,11 +8,10 @@ import { Search, ShoppingBag, Menu, X } from "lucide-react";
 import SearchModal from "./SearchModal";
 
 const nav = [
+  { label: "Home", href: "/" },
   { label: "Shop", href: "/shop" },
-  { label: "Men", href: "/shop?category=MEN" },
-  { label: "Women", href: "/shop?category=WOMEN" },
-  { label: "Kids", href: "/shop?category=KIDS" },
   { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
 ];
 
 export default function Header() {
