@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { X } from "lucide-react";
 
 type Message = { id: string; text: string; href?: string };
 
@@ -22,7 +23,7 @@ export default function AnnouncementTicker({
     const m = messages?.[0];
     if (!m) return null;
     return m.href ? (
-      <Link href={m.href} className="hover:opacity-80">
+      <Link href={m.href} className="hover:text-accent transition-colors">
         {m.text}
       </Link>
     ) : (
@@ -33,9 +34,9 @@ export default function AnnouncementTicker({
   if (!content || dismissed) return null;
 
   return (
-    <div className="border-b border-zinc-200 bg-white">
-      <div className="mx-auto flex h-9 max-w-6xl items-center justify-between px-4 text-xs text-zinc-700 md:px-6 lg:px-8">
-        <div className="truncate">{content}</div>
+    <div className="bg-accent text-accent-foreground">
+      <div className="mx-auto flex h-10 max-w-7xl items-center justify-center px-4 text-xs font-semibold uppercase tracking-wider md:px-6 lg:px-8">
+        <div className="truncate text-center">{content}</div>
         {dismissible ? (
           <button
             type="button"
@@ -45,10 +46,10 @@ export default function AnnouncementTicker({
                 window.localStorage.setItem(storageKey, "1");
               } catch {}
             }}
-            className="ml-3 shrink-0 rounded-lg px-2 py-1 text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"
+            className="absolute right-4 shrink-0 rounded-lg p-1 hover:bg-accent-foreground/10"
             aria-label="Dismiss announcement"
           >
-            ✕
+            <X className="h-4 w-4" />
           </button>
         ) : null}
       </div>

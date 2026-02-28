@@ -1,7 +1,7 @@
 -- Seed products for DemUrban
 -- Prices are in kobo (Nigerian currency subunit, 100 kobo = 1 Naira)
 
-INSERT INTO "Product" (id, handle, title, description, price, "compareAtPrice", category, tags, images, inventory, "createdAt", "updatedAt")
+INSERT INTO "Product" (id, slug, title, description, price_kobo, compare_at_kobo, category, tags, images, inventory_qty, created_at, updated_at)
 VALUES
   -- MEN's Collection
   (gen_random_uuid(), 'dem-classic-tee-black', 'DEM Classic Tee - Black', 'Premium cotton crew neck tee with embroidered DEM logo. The essential piece for the DEM lifestyle.', 1500000, 1800000, 'MEN', ARRAY['new', 'best-seller', 'tees'], ARRAY['/images/products/men-tee-black.jpg'], 50, NOW(), NOW()),
@@ -30,13 +30,13 @@ VALUES
   
   (gen_random_uuid(), 'kids-cap-red', 'Kids DEM Cap - Red', 'Adjustable cap with embroidered logo. One size fits most kids.', 600000, NULL, 'KIDS', ARRAY['accessories', 'caps'], ARRAY['/images/products/kids-cap.jpg'], 100, NOW(), NOW())
 
-ON CONFLICT (handle) DO UPDATE SET
+ON CONFLICT (slug) DO UPDATE SET
   title = EXCLUDED.title,
   description = EXCLUDED.description,
-  price = EXCLUDED.price,
-  "compareAtPrice" = EXCLUDED."compareAtPrice",
+  price_kobo = EXCLUDED.price_kobo,
+  compare_at_kobo = EXCLUDED.compare_at_kobo,
   category = EXCLUDED.category,
   tags = EXCLUDED.tags,
   images = EXCLUDED.images,
-  inventory = EXCLUDED.inventory,
-  "updatedAt" = NOW();
+  inventory_qty = EXCLUDED.inventory_qty,
+  updated_at = NOW();

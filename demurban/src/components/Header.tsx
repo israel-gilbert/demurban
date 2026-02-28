@@ -1,58 +1,129 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { Search, ShoppingBag, Menu, X } from "lucide-react";
+import SearchModal from "./SearchModal";
 
 const nav = [
   { label: "Shop", href: "/shop" },
+  { label: "Men", href: "/shop?category=MEN" },
+  { label: "Women", href: "/shop?category=WOMEN" },
+  { label: "Kids", href: "/shop?category=KIDS" },
   { label: "About", href: "/about" },
-  { label: "Blog", href: "/blog" },
-  { label: "Contact", href: "/contact" },
 ];
 
 export default function Header() {
   const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 md:px-6 lg:px-8">
-        <Link href="/" className="text-sm font-semibold tracking-tight">
-          DEMURBAN
-        </Link>
-
-        <nav className="hidden items-center gap-6 md:flex">
-          {nav.map((i) => {
-            const active = pathname === i.href || pathname?.startsWith(i.href + "/");
-            return (
-              <Link
-                key={i.href}
-                href={i.href}
-                className={[
-                  "text-sm transition-colors",
-                  active ? "text-zinc-950" : "text-zinc-600 hover:text-zinc-950",
-                ].join(" ")}
-              >
-                {i.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="flex items-center gap-2">
-          <Link
-            href="/cart"
-            className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 px-3 text-sm hover:bg-zinc-50"
+    <>
+      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6 lg:px-8">
+          {/* Mobile menu button */}
+          <button
+            type="button"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground md:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
           >
-            Cart
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-3">
+            <Image
+              src="/images/logo.png"
+              alt="DEMURBAN"
+              width={40}
+              height={40}
+              className="h-10 w-10 object-contain"
+            />
+            <span className="hidden text-lg font-bold tracking-[0.2em] text-foreground sm:inline-block font-[var(--font-oswald)]">
+              DEMURBAN
+            </span>
           </Link>
-          <Link
-            href="/checkout"
-            className="hidden h-10 items-center justify-center rounded-xl bg-zinc-950 px-3 text-sm font-medium text-white hover:bg-zinc-900 md:inline-flex"
-          >
-            Checkout
-          </Link>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden items-center gap-8 md:flex">
+            {nav.map((item) => {
+              const isActive = pathname === item.href || 
+                (item.href !== "/shop" && pathname?.startsWith(item.href));
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`text-sm font-medium uppercase tracking-wider transition-colors ${
+                    isActive 
+                      ? "text-accent" 
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+              aria-label="Search"
+            >
+              <Search className="h-5 w-5" />
+            </button>
+            <Link
+              href="/cart"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border px-4 text-sm font-medium text-foreground hover:bg-muted"
+            >
+              <ShoppingBag className="h-4 w-4" />
+              <span className="hidden sm:inline">Cart</span>
+            </Link>
+            <Link
+              href="/checkout"
+              className="hidden h-10 items-center justify-center rounded-lg bg-accent px-5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 md:inline-flex"
+            >
+              Checkout
+            </Link>
+          </div>
         </div>
-      </div>
-    </header>
+
+        {/* Mobile Navigation */}
+        {mobileMenuOpen && (
+          <div className="border-t border-border bg-background md:hidden">
+            <nav className="flex flex-col px-4 py-4">
+              {nav.map((item) => {
+                const isActive = pathname === item.href || 
+                  (item.href !== "/shop" && pathname?.startsWith(item.href));
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`py-3 text-sm font-medium uppercase tracking-wider transition-colors ${
+                      isActive 
+                        ? "text-accent" 
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+        )}
+      </header>
+
+      {/* Search Modal */}
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+    </>
   );
 }

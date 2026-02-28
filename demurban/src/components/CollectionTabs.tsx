@@ -15,7 +15,7 @@ export default function CollectionTabs({
   const sp = useSearchParams();
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto">
+    <div className="flex items-center gap-2 overflow-x-auto pb-2">
       {tabs.map((t) => {
         const active = t.value === value;
         let href = t.href;
@@ -32,12 +32,11 @@ export default function CollectionTabs({
           <Link
             key={t.value}
             href={href}
-            className={[
-              "inline-flex h-10 shrink-0 items-center justify-center rounded-xl border px-4 text-sm",
+            className={`inline-flex h-10 shrink-0 items-center justify-center rounded-lg border px-5 text-sm font-medium uppercase tracking-wider transition-colors ${
               active
-                ? "border-zinc-950 bg-zinc-950 text-white"
-                : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50",
-            ].join(" ")}
+                ? "border-accent bg-accent text-accent-foreground"
+                : "border-border text-muted-foreground hover:border-accent hover:text-accent"
+            }`}
           >
             {t.label}
           </Link>
