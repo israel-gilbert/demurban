@@ -7,7 +7,16 @@ import { ArrowRight } from "lucide-react";
 export const revalidate = 3600;
 
 export default async function HomePage() {
-  const products = await fetchProducts({ limit: 8 });
+  let products = [];
+  let error: string | null = null;
+  
+  try {
+    products = await fetchProducts({ limit: 8 });
+  } catch (err) {
+    console.error("[v0] Failed to fetch products:", err);
+    error = "Unable to load products";
+  }
+  
   const newArrivals = products.filter((p) => p.tags?.includes("new")).slice(0, 4);
   const featured = products.slice(0, 4);
 
@@ -120,9 +129,16 @@ export default async function HomePage() {
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
-        <div className="mt-6">
-          <ProductGrid products={featured} />
-        </div>
+        {error ? (
+          <div className="mt-6 rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
+            <p className="text-sm text-muted-foreground">{error}</p>
+            <p className="mt-2 text-xs text-muted-foreground">Please check back shortly or contact support.</p>
+          </div>
+        ) : featured.length > 0 ? (
+          <div className="mt-6">
+            <ProductGrid products={featured} />
+          </div>
+        ) : null}
       </section>
 
       {/* New Arrivals */}
