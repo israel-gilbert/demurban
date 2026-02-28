@@ -102,11 +102,11 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   };
 
   return (
-    <div className="py-10 md:py-14">
+    <div className="mx-auto max-w-7xl px-4 py-10 md:px-6 md:py-14 lg:px-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-foreground font-[var(--font-oswald)] uppercase">
-          Shop
+          Shop Collection
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Explore the DEM lifestyle. Where taste meets identity.
