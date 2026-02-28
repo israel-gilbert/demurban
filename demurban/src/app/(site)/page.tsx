@@ -4,6 +4,7 @@ import { ArrowRight, Search } from "lucide-react";
 import ProductGrid from "@/components/ProductGrid";
 import CollectionsShowcase from "@/components/CollectionsShowcase";
 import WhatDefinesOurWear from "@/components/WhatDefinesOurWear";
+import CommunityShowcase from "@/components/CommunityShowcase";
 import { fetchProducts } from "@/lib/server-actions";
 import type { Product } from "@/lib/types";
 
@@ -152,6 +153,9 @@ export default async function HomePage() {
 
       {/* What Defines Our Wear Section */}
       <WhatDefinesOurWear />
+
+      {/* Community Showcase */}
+      <CommunityShowcase />
 
       {/* New Arrivals */}
       {newArrivals.length > 0 && (
