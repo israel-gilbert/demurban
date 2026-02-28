@@ -64,8 +64,11 @@ export async function POST(req: Request) {
         title_snapshot: p.title,
         unit_price_kobo: p.price_kobo,
         quantity: qty,
-        variant_json: i.variant ?? undefined,
+        variant_json: i.variant ? (i.variant as any) : null,
         line_total_kobo: lineTotal,
+        product: {
+          connect: { id: p.id },
+        },
       };
     });
 

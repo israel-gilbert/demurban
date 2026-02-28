@@ -1,48 +1,88 @@
 import { Suspense } from "react";
-import CollectionTabs from "@/components/CollectionTabs";
 import ProductGrid from "@/components/ProductGrid";
-import { fetchProductsByCollection } from "@/lib/server-actions";
+import ShopFilters from "@/components/ShopFilters";
+import {
+  fetchProductsWithFilters,
+  getAvailableTags,
+  getPriceRange,
+  type FilterOptions,
+  type SortOption,
+} from "@/lib/server-actions";
+import type { ProductCategory } from "@/lib/types";
 
 export const revalidate = 3600;
 
 interface ShopPageProps {
-  searchParams: Promise<{ collection?: string }>;
+  searchParams: Promise<{
+    category?: string;
+    tag?: string;
+    sort?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    q?: string;
+  }>;
 }
 
-function CollectionTabsSkeleton() {
+function FiltersSkeleton() {
   return (
-    <div className="flex items-center gap-2">
-      {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="h-10 w-24 rounded-xl bg-zinc-200 animate-pulse" />
-      ))}
+    <div className="space-y-6">
+      <div className="h-8 w-24 rounded bg-muted animate-pulse" />
+      <div className="flex gap-2">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-10 w-20 rounded-lg bg-muted animate-pulse" />
+        ))}
+      </div>
+      <div className="h-8 w-20 rounded bg-muted animate-pulse" />
+      <div className="flex gap-2">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-8 w-16 rounded-lg bg-muted animate-pulse" />
+        ))}
+      </div>
     </div>
   );
 }
 
 function ProductGridSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">
-      {Array.from({ length: 8 }).map((_, i) => (
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {Array.from({ length: 9 }).map((_, i) => (
         <div
-          // eslint-disable-next-line react/no-array-index-key
           key={i}
-          className="rounded-2xl border border-zinc-200 bg-zinc-50 h-96 animate-pulse"
+          className="rounded-xl border border-border bg-card h-96 animate-pulse"
         />
       ))}
     </div>
   );
 }
 
-async function ShopContent({ collection }: { collection: string }) {
-  const products = await fetchProductsByCollection(collection);
+async function FiltersSection() {
+  const [availableTags, priceRange] = await Promise.all([
+    getAvailableTags(),
+    getPriceRange(),
+  ]);
+
+  return <ShopFilters availableTags={availableTags} priceRange={priceRange} />;
+}
+
+async function ShopContent({ filters }: { filters: FilterOptions }) {
+  const products = await fetchProductsWithFilters(filters);
 
   return (
-    <div className="mt-6">
+    <div>
+      <div className="mb-6 flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          {products.length} product{products.length !== 1 ? "s" : ""} found
+        </p>
+      </div>
+
       {products.length > 0 ? (
         <ProductGrid products={products} />
       ) : (
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-8 text-center">
-          <p className="text-sm text-zinc-600">No products found.</p>
+        <div className="rounded-xl border border-border bg-card p-12 text-center">
+          <p className="text-lg font-semibold text-foreground">No products found</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Try adjusting your filters or search query.
+          </p>
         </div>
       )}
     </div>
@@ -50,32 +90,44 @@ async function ShopContent({ collection }: { collection: string }) {
 }
 
 export default async function ShopPage({ searchParams }: ShopPageProps) {
-  const { collection = "all" } = await searchParams;
+  const params = await searchParams;
+
+  const filters: FilterOptions = {
+    category: params.category as ProductCategory | undefined,
+    tag: params.tag,
+    sort: (params.sort as SortOption) || "newest",
+    minPrice: params.minPrice ? Number(params.minPrice) : undefined,
+    maxPrice: params.maxPrice ? Number(params.maxPrice) : undefined,
+    query: params.q,
+  };
 
   return (
     <div className="py-10 md:py-14">
-      <div className="flex flex-col gap-3">
-        <h1 className="text-2xl font-semibold">Shop</h1>
-        <p className="text-sm text-zinc-600">Browse DemUrban pieces by category.</p>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground font-[var(--font-oswald)] uppercase">
+          Shop
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Explore the DEM lifestyle. Where taste meets identity.
+        </p>
       </div>
 
-      <div className="mt-6">
-        <Suspense fallback={<CollectionTabsSkeleton />}>
-          <CollectionTabs
-            value={collection}
-            tabs={[
-              { label: "All", value: "all" },
-              { label: "Men", value: "men" },
-              { label: "Women", value: "women" },
-              { label: "Kids", value: "kids" },
-            ]}
-          />
-        </Suspense>
-      </div>
+      <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
+        {/* Sidebar Filters */}
+        <aside className="lg:sticky lg:top-24 lg:self-start">
+          <Suspense fallback={<FiltersSkeleton />}>
+            <FiltersSection />
+          </Suspense>
+        </aside>
 
-      <Suspense fallback={<ProductGridSkeleton />}>
-        <ShopContent collection={collection} />
-      </Suspense>
+        {/* Products Grid */}
+        <main>
+          <Suspense fallback={<ProductGridSkeleton />}>
+            <ShopContent filters={filters} />
+          </Suspense>
+        </main>
+      </div>
     </div>
   );
 }
