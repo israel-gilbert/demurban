@@ -14,9 +14,6 @@ interface ShopFiltersProps {
 
 const CATEGORIES: { label: string; value: ProductCategory | "ALL" }[] = [
   { label: "All", value: "ALL" },
-  { label: "Men", value: "MEN" },
-  { label: "Women", value: "WOMEN" },
-  { label: "Kids", value: "KIDS" },
 ];
 
 const SORT_OPTIONS: { label: string; value: SortOption }[] = [
