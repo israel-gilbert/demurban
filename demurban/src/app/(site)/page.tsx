@@ -1,7 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Search } from "lucide-react";
 import ProductGrid from "@/components/ProductGrid";
+import CollectionsShowcase from "@/components/CollectionsShowcase";
+import WhatDefinesOurWear from "@/components/WhatDefinesOurWear";
+import CommunityShowcase from "@/components/CommunityShowcase";
 import { fetchProducts } from "@/lib/server-actions";
 import type { Product } from "@/lib/types";
 
@@ -18,125 +21,141 @@ export default async function HomePage() {
     error = "Unable to load products at the moment";
   }
 
-  const featured = products.slice(0, 4);
+  const featured = products.slice(0, 8);
   const newArrivals = products.filter((p) => p.tags?.includes("new")).slice(0, 4);
+  const heroProducts = products.slice(0, 7);
+
+  // Create collection data from products
+  const collections = [
+    {
+      id: "essentials",
+      name: "Core Essentials",
+      description: "Premium basics designed for everyday wear. Perfect foundation pieces for any wardrobe.",
+      priceRange: { min: 45, max: 120 },
+      image: "/images/placeholder.jpg",
+      href: "/shop?tag=essentials",
+      tag: "Unisex",
+    },
+    {
+      id: "limited",
+      name: "Limited Editions",
+      description: "Exclusive pieces in limited quantities. Get them before they're gone.",
+      priceRange: { min: 65, max: 180 },
+      image: "/images/placeholder.jpg",
+      href: "/shop?tag=limited",
+      tag: "Limited",
+    },
+    {
+      id: "trending",
+      name: "Trending Now",
+      description: "The hottest pieces right now. What everyone's wearing.",
+      priceRange: { min: 55, max: 150 },
+      image: "/images/placeholder.jpg",
+      href: "/shop?tag=trending",
+      tag: "Trending",
+    },
+    {
+      id: "seasonal",
+      name: "Seasonal Collection",
+      description: "Fresh styles for the season. Stay ahead of the curve.",
+      priceRange: { min: 50, max: 160 },
+      image: "/images/placeholder.jpg",
+      href: "/shop?tag=seasonal",
+    },
+    {
+      id: "bestsellers",
+      name: "Best Sellers",
+      description: "Customer favorites that keep coming back. Tested and loved by the community.",
+      priceRange: { min: 40, max: 140 },
+      image: "/images/placeholder.jpg",
+      href: "/shop?sort=popular",
+    },
+  ];
 
   return (
     <div className="space-y-0">
-      {/* Hero Section */}
-      <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-black px-4">
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-20 left-10 h-96 w-96 rounded-full bg-accent/20 blur-3xl"></div>
-          <div className="absolute bottom-20 right-10 h-96 w-96 rounded-full bg-accent/10 blur-3xl"></div>
+      {/* Hero Section - Full Width with Image Background */}
+      <section className="relative flex h-[600px] md:h-[700px] lg:h-[800px] flex-col items-center justify-center overflow-hidden bg-black">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0">
+          <img
+            src="/images/placeholder.jpg"
+            alt="DEM Urban Hero"
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/70"></div>
         </div>
 
-        <div className="relative z-10 text-center">
-          <Image
-            src="/images/logo.png"
-            alt="DEM Urban Logo"
-            width={120}
-            height={120}
-            className="mx-auto mb-8 drop-shadow-lg"
-            priority
-          />
-          <h1 className="text-balance font-[var(--font-oswald)] text-5xl font-bold uppercase tracking-wider text-white md:text-6xl lg:text-7xl">
+        {/* Hero Content - Centered Overlay */}
+        <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 max-w-2xl">
+          {/* Tags */}
+          <div className="flex flex-wrap gap-2 justify-center mb-6">
+            <span className="inline-block rounded-full bg-white/20 backdrop-blur-sm px-3 py-1 text-xs font-medium text-white border border-white/30">
+              Bold
+            </span>
+            <span className="inline-block rounded-full bg-white/20 backdrop-blur-sm px-3 py-1 text-xs font-medium text-white border border-white/30">
+              Unapologetic
+            </span>
+          </div>
+
+          {/* Headline */}
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6 font-[var(--font-oswald)] uppercase tracking-tight">
             Where Taste Meets Identity
           </h1>
-          <p className="mt-6 text-balance font-mono text-lg uppercase tracking-widest text-muted-foreground md:text-xl">
-            Home of the DEM Lifestyle
+
+          {/* Description */}
+          <p className="text-base md:text-lg text-white/90 mb-8 leading-relaxed max-w-xl">
+            Discover unisex streetwear designed for those who refuse to blend in. Premium pieces that celebrate culture, creativity, and self-expression.
           </p>
-          <div className="mt-12 flex flex-col gap-4 sm:flex-row sm:justify-center">
+
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/shop"
-              className="group inline-flex items-center justify-center gap-2 rounded-full bg-accent px-8 py-4 font-bold uppercase tracking-wider text-background transition-all hover:shadow-lg hover:shadow-accent/50"
+              className="inline-flex items-center justify-center h-12 px-8 rounded-full bg-white text-black font-bold text-sm hover:bg-white/90 transition-all"
             >
-              Shop Now
-              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+              Shop All Items
             </Link>
             <Link
               href="/about"
-              className="inline-flex items-center justify-center rounded-full border-2 border-accent px-8 py-4 font-bold uppercase tracking-wider text-accent transition-colors hover:bg-accent hover:text-background"
+              className="inline-flex items-center justify-center h-12 px-8 rounded-full bg-transparent border-2 border-white text-white font-bold text-sm hover:bg-white/10 transition-all"
             >
               Learn More
             </Link>
           </div>
         </div>
-      </section>
 
-      {/* Categories Section */}
-      <section className="mx-auto w-full max-w-7xl px-4 py-16 md:px-6 md:py-20 lg:px-8">
-        <div className="grid gap-8 md:grid-cols-2">
-          <Link
-            href="/shop"
-            className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-accent/10 to-background p-12 transition-all hover:border-accent/50 hover:shadow-lg hover:shadow-accent/5"
-          >
-            <div className="relative z-10">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Explore</p>
-              <h3 className="mt-4 text-3xl font-bold uppercase tracking-wider font-[var(--font-oswald)]">
-                Shop The Collection
-              </h3>
-              <p className="mt-3 text-base text-muted-foreground">
-                Unisex streetwear for everyone. Bold pieces designed without limits.
-              </p>
-              <div className="mt-6 flex items-center gap-2 text-sm font-medium text-accent">
-                Browse Now
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </div>
+        {/* Product Carousel Strip - Bottom of Hero */}
+        {heroProducts.length > 0 && (
+          <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 to-transparent pt-8 pb-6">
+            <div className="flex gap-2 px-4 overflow-x-auto justify-center pb-4 md:pb-0">
+              {heroProducts.map((product, idx) => (
+                <Link
+                  key={`${product.id}-${idx}`}
+                  href={`/shop/${product.slug}`}
+                  className="group relative shrink-0 h-20 w-20 md:h-24 md:w-24 rounded-lg overflow-hidden border-2 border-transparent hover:border-accent transition-all"
+                >
+                  <img
+                    src={product.images?.[0] ?? "/images/placeholder.jpg"}
+                    alt={product.title}
+                    className="h-full w-full object-cover group-hover:scale-110 transition-transform"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                </Link>
+              ))}
             </div>
-            <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-accent/5 blur-3xl" />
-          </Link>
-
-          <Link
-            href="/about"
-            className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-background to-accent/5 p-12 transition-all hover:border-accent/50 hover:shadow-lg hover:shadow-accent/5"
-          >
-            <div className="relative z-10">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Our Story</p>
-              <h3 className="mt-4 text-3xl font-bold uppercase tracking-wider font-[var(--font-oswald)]">
-                About DEM
-              </h3>
-              <p className="mt-3 text-base text-muted-foreground">
-                Where taste meets identity. Built from the streets of Lagos.
-              </p>
-              <div className="mt-6 flex items-center gap-2 text-sm font-medium text-accent">
-                Learn More
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </div>
-            </div>
-            <div className="absolute -left-20 -bottom-20 h-40 w-40 rounded-full bg-accent/5 blur-3xl" />
-          </Link>
-        </div>
-      </section>
-
-      {/* Featured Products */}
-      <section className="mx-auto w-full max-w-7xl px-4 py-16 md:px-6 md:py-20 lg:px-8">
-        <div className="flex items-end justify-between gap-4 mb-8">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Curated Selection</p>
-            <h2 className="mt-2 text-2xl font-bold uppercase tracking-wider font-[var(--font-oswald)]">
-              Featured Pieces
-            </h2>
-          </div>
-          <Link
-            href="/shop"
-            className="group flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-accent"
-          >
-            View all
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
-        </div>
-        {error ? (
-          <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-8 text-center">
-            <p className="text-sm text-muted-foreground">{error}</p>
-          </div>
-        ) : featured.length > 0 ? (
-          <ProductGrid products={featured} />
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">No products available</p>
           </div>
         )}
       </section>
+
+      {/* Collections Showcase - Masonry Grid */}
+      <CollectionsShowcase collections={collections} />
+
+      {/* What Defines Our Wear Section */}
+      <WhatDefinesOurWear />
+
+      {/* Community Showcase */}
+      <CommunityShowcase />
 
       {/* New Arrivals */}
       {newArrivals.length > 0 && (
