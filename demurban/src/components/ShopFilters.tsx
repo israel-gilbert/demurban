@@ -35,7 +35,7 @@ export default function ShopFilters({ availableTags, priceRange }: ShopFiltersPr
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   // Get current filter values from URL
-  const currentCategory = (searchParams.get("category") as ProductCategory) || "ALL";
+  const currentCategory = (searchParams.get("category") as ProductCategory | "ALL") || "ALL";
   const currentTag = searchParams.get("tag") || "";
   const currentSort = (searchParams.get("sort") as SortOption) || "newest";
   const currentMinPrice = searchParams.get("minPrice") ? Number(searchParams.get("minPrice")) : priceRange.min;
