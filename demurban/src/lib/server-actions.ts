@@ -147,7 +147,7 @@ export async function getAvailableTags(): Promise<string[]> {
     WHERE active = true
     ORDER BY tag
   `;
-  return result.map((r: { tag: string }) => r.tag);
+  return (result as { tag: string }[]).map((r) => r.tag);
 }
 
 export async function getPriceRange(): Promise<{ min: number; max: number }> {
