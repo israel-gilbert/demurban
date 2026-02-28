@@ -3,11 +3,12 @@ import Image from "next/image";
 import ProductGrid from "@/components/ProductGrid";
 import { fetchProducts } from "@/lib/server-actions";
 import { ArrowRight } from "lucide-react";
+import type { Product } from "@/lib/types";
 
 export const revalidate = 3600;
 
 export default async function HomePage() {
-  let products = [];
+  let products: Product[] = [];
   let error: string | null = null;
   
   try {
