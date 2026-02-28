@@ -3,6 +3,7 @@ import Image from "next/image";
 import { ArrowRight, Search } from "lucide-react";
 import ProductGrid from "@/components/ProductGrid";
 import CollectionsShowcase from "@/components/CollectionsShowcase";
+import WhatDefinesOurWear from "@/components/WhatDefinesOurWear";
 import { fetchProducts } from "@/lib/server-actions";
 import type { Product } from "@/lib/types";
 
@@ -148,6 +149,9 @@ export default async function HomePage() {
 
       {/* Collections Showcase - Masonry Grid */}
       <CollectionsShowcase collections={collections} />
+
+      {/* What Defines Our Wear Section */}
+      <WhatDefinesOurWear />
 
       {/* New Arrivals */}
       {newArrivals.length > 0 && (
