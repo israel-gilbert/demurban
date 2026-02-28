@@ -32,11 +32,13 @@ export default function CheckoutPage() {
 
     if (cart.items.length === 0) {
       setError("Your cart is empty.");
+      setLoading(false);
       return;
     }
 
     if (!email || !fullName || !address1 || !city || !state || !country) {
       setError("Please complete all required fields.");
+      setLoading(false);
       return;
     }
 
@@ -245,11 +247,6 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-    if (!email || !fullName || !address1 || !city || !state || !country) {
-      setError("Please complete the required fields.");
-      return;
-    }
 
     setLoading(true);
     try {
