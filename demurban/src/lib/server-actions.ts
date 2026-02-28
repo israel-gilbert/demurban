@@ -2,6 +2,7 @@
 
 import { prisma, sql } from "@/lib/db";
 import type { Product, ProductCategory } from "@/lib/types";
+import { Prisma } from "@prisma/client";
 
 export type SortOption = "newest" | "price-asc" | "price-desc" | "name-asc" | "name-desc";
 
@@ -27,72 +28,57 @@ export async function fetchProducts(opts?: { limit?: number }): Promise<Product[
 export async function fetchProductsWithFilters(filters: FilterOptions): Promise<Product[]> {
   const { category, tag, minPrice, maxPrice, sort = "newest", query } = filters;
 
-  // Build WHERE clauses
-  const conditions: string[] = ['active = true'];
-  const params: (string | number)[] = [];
-  let paramIndex = 1;
+  // Build Prisma where clause
+  const where: Prisma.ProductWhereInput = { active: true };
 
   if (category) {
-    conditions.push(`category = $${paramIndex}`);
-    params.push(category);
-    paramIndex++;
+    where.category = category;
   }
 
   if (tag) {
-    conditions.push(`$${paramIndex} = ANY(tags)`);
-    params.push(tag);
-    paramIndex++;
+    where.tags = { has: tag };
   }
 
   if (minPrice !== undefined) {
-    conditions.push(`price_kobo >= $${paramIndex}`);
-    params.push(minPrice);
-    paramIndex++;
+    where.price_kobo = { ...where.price_kobo as object, gte: minPrice };
   }
 
   if (maxPrice !== undefined) {
-    conditions.push(`price_kobo <= $${paramIndex}`);
-    params.push(maxPrice);
-    paramIndex++;
+    where.price_kobo = { ...where.price_kobo as object, lte: maxPrice };
   }
 
   if (query) {
-    conditions.push(`(
-      LOWER(title) LIKE $${paramIndex} 
-      OR LOWER(description) LIKE $${paramIndex}
-      OR EXISTS (SELECT 1 FROM unnest(tags) AS t WHERE LOWER(t) LIKE $${paramIndex})
-    )`);
-    params.push(`%${query.toLowerCase()}%`);
-    paramIndex++;
+    where.OR = [
+      { title: { contains: query, mode: "insensitive" } },
+      { description: { contains: query, mode: "insensitive" } },
+      { tags: { hasSome: [query.toLowerCase()] } },
+    ];
   }
 
-  // Build ORDER BY
-  let orderBy = 'created_at DESC';
+  // Build orderBy
+  let orderBy: Prisma.ProductOrderByWithRelationInput = { created_at: "desc" };
   switch (sort) {
-    case 'price-asc':
-      orderBy = 'price_kobo ASC';
+    case "price-asc":
+      orderBy = { price_kobo: "asc" };
       break;
-    case 'price-desc':
-      orderBy = 'price_kobo DESC';
+    case "price-desc":
+      orderBy = { price_kobo: "desc" };
       break;
-    case 'name-asc':
-      orderBy = 'title ASC';
+    case "name-asc":
+      orderBy = { title: "asc" };
       break;
-    case 'name-desc':
-      orderBy = 'title DESC';
+    case "name-desc":
+      orderBy = { title: "desc" };
       break;
     default:
-      orderBy = 'created_at DESC';
+      orderBy = { created_at: "desc" };
   }
 
-  const whereClause = conditions.join(' AND ');
-  const queryString = `
-    SELECT * FROM "Product"
-    WHERE ${whereClause}
-    ORDER BY ${orderBy}
-  `;
+  const products = await prisma.product.findMany({
+    where,
+    orderBy,
+  });
 
-  const products = await sql(queryString, params);
   return products as unknown as Product[];
 }
 
