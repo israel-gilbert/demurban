@@ -156,8 +156,9 @@ export async function getPriceRange(): Promise<{ min: number; max: number }> {
     FROM "Product"
     WHERE active = true
   `;
+  const row = (result as { min: number | null; max: number | null }[])?.[0];
   return {
-    min: result[0]?.min ?? 0,
-    max: result[0]?.max ?? 10000000,
+    min: row?.min ?? 0,
+    max: row?.max ?? 10000000,
   };
 }
