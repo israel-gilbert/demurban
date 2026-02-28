@@ -3,9 +3,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, ShoppingBag, Menu, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import SearchModal from "./SearchModal";
+import { overlayVariants, menuVariants } from "@/lib/motion";
 
 const nav = [
   { label: "Home", href: "/" },
@@ -18,6 +20,20 @@ export default function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+
+  // Close menu on ESC
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileMenuOpen(false);
+    };
+    if (mobileMenuOpen) document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [mobileMenuOpen]);
+
+  // Close menu on outside click
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) setMobileMenuOpen(false);
+  };
 
   return (
     <>
@@ -94,31 +110,49 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
-        {mobileMenuOpen && (
-          <div className="border-t border-border bg-background md:hidden">
-            <nav className="flex flex-col px-4 py-4">
-              {nav.map((item) => {
-                const isActive = pathname === item.href || 
-                  (item.href !== "/shop" && pathname?.startsWith(item.href));
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`py-3 text-sm font-medium uppercase tracking-wider transition-colors ${
-                      isActive 
-                        ? "text-accent" 
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        )}
+        {/* Mobile Navigation with Animation */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <>
+              <motion.div
+                className="fixed inset-0 z-40 md:hidden"
+                variants={overlayVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                onClick={handleOverlayClick}
+              />
+              <motion.div
+                className="fixed right-0 top-16 z-40 w-64 border-l border-border bg-background md:hidden"
+                variants={menuVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                <nav className="flex flex-col px-4 py-4">
+                  {nav.map((item) => {
+                    const isActive = pathname === item.href || 
+                      (item.href !== "/shop" && pathname?.startsWith(item.href));
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`py-3 text-sm font-medium uppercase tracking-wider transition-colors ${
+                          isActive 
+                            ? "text-accent" 
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* Search Modal */}
