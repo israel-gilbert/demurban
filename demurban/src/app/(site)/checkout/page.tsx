@@ -40,32 +40,8 @@ export default function CheckoutPage() {
       setError("Please complete all required fields.");
       setLoading(false);
       return;
-    }
+}
 
-    setLoading(true);
-    try {
-      const createOrderRes = await fetch("/api/checkout/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          phone,
-          items: cart.items.map((i) => ({ productId: i.productId, quantity: i.quantity, variant: i.variant })),
-          shippingAddress: {
-            fullName,
-            address1,
-            address2,
-            city,
-            state,
-            country,
-          },
-        }),
-      });
-
-      const created = await createOrderRes.json();
-      if (!createOrderRes.ok) {
-        throw new Error(created?.error ?? "Failed to create order");
-      }
 
       const initRes = await fetch("/api/payments/paystack/initialize", {
         method: "POST",
