@@ -1,6 +1,4 @@
-// PDP Gallery Example with Crossfade Animation
-// This shows how to implement the gallery crossfade using imageVariants
-// Integrate this into src/app/(site)/shop/[handle]/page.tsx
+"use client";
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,6 +11,14 @@ interface PDPGalleryProps {
 
 export function PDPGallery({ images, title }: PDPGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
+
+  if (!images || images.length === 0) {
+    return (
+      <div className="aspect-square w-full rounded-xl bg-muted border border-border flex items-center justify-center text-muted-foreground">
+        No images available
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -50,7 +56,6 @@ export function PDPGallery({ images, title }: PDPGalleryProps) {
               alt={`${title} thumbnail ${idx + 1}`}
               className="h-full w-full object-cover"
             />
-            {/* Active indicator */}
             {idx === selectedIndex && (
               <motion.div
                 layoutId="gallery-active"
@@ -64,24 +69,8 @@ export function PDPGallery({ images, title }: PDPGalleryProps) {
 
       {/* Image counter */}
       <div className="text-xs text-muted-foreground text-center">
-        {selectedIndex + 1} / {images.length}
+        {selectedIndex + 1} of {images.length}
       </div>
     </div>
   );
 }
-
-// Usage in PDP page:
-/*
-import { PDPGallery } from "@/components/PDPGallery";
-
-export default function ProductDetailPage({ product }) {
-  return (
-    <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-      <PDPGallery images={product.images} title={product.title} />
-      <div>
-        {/* Product info */}
-      </div>
-    </div>
-  );
-}
-*/
