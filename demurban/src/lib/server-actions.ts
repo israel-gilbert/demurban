@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma, sql } from "@/lib/db";
+import { prisma, getSql } from "@/lib/db";
 import type { Product, ProductCategory } from "@/lib/types";
 import { Prisma } from "@prisma/client";
 
@@ -88,6 +88,7 @@ export async function searchProducts(query: string): Promise<Product[]> {
   }
 
   const searchTerm = `%${query.toLowerCase()}%`;
+  const sql = getSql();
   
   const products = await sql`
     SELECT * FROM "Product"
@@ -141,6 +142,7 @@ export async function fetchProductBySlug(slug: string): Promise<Product | null> 
 }
 
 export async function getAvailableTags(): Promise<string[]> {
+  const sql = getSql();
   const result = await sql`
     SELECT DISTINCT unnest(tags) as tag
     FROM "Product"
@@ -151,6 +153,7 @@ export async function getAvailableTags(): Promise<string[]> {
 }
 
 export async function getPriceRange(): Promise<{ min: number; max: number }> {
+  const sql = getSql();
   const result = await sql`
     SELECT MIN(price_kobo) as min, MAX(price_kobo) as max
     FROM "Product"
