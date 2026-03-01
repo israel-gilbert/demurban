@@ -12,10 +12,10 @@ export default function ProductCard({ product }: { product: Product }) {
   const hasDiscount = product.compare_at_kobo && product.compare_at_kobo > product.price_kobo;
 
   return (
-    <motion.div variants={itemVariants}>
+    <motion.div variants={itemVariants} className="h-full">
       <Link
         href={`/shop/${product.slug}`}
-        className="group block overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-accent/50 hover:shadow-lg hover:shadow-accent/5"
+        className="group block h-full overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-accent/50 hover:shadow-lg hover:shadow-accent/5"
       >
         <motion.div
           className="relative aspect-[3/4] w-full overflow-hidden bg-muted"
