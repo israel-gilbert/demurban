@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Oswald } from "next/font/google";
+import { ThemeProvider } from "@/providers/ThemeProvider";
 import "./globals.css";
 
 const inter = Inter({ 
@@ -26,7 +27,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${oswald.variable}`}>
       <body className="min-h-dvh bg-background text-foreground antialiased font-sans">
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
