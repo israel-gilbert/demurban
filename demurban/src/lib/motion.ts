@@ -16,7 +16,7 @@ export const pageVariants: Variants = {
     y: 0,
     transition: {
       duration: 0.3,
-      ease: "easeOut",
+      ease: [0.25, 0.46, 0.45, 0.94], // cubic-bezier easeOut
     },
   },
 };
@@ -44,19 +44,19 @@ export const itemVariants: Variants = {
     y: 0,
     transition: {
       duration: 0.3,
-      ease: "easeOut",
+      ease: [0.25, 0.46, 0.45, 0.94], // cubic-bezier easeOut
     },
   },
 };
 
 // Product card hover effect
-export const hoverVariants = {
+export const hoverVariants: Variants = {
   initial: { scale: 1 },
   hover: {
     scale: 1.05,
     transition: {
       duration: 0.25,
-      ease: "easeOut",
+      ease: [0.25, 0.46, 0.45, 0.94], // cubic-bezier easeOut
     },
   },
 };
@@ -81,7 +81,7 @@ export const tabVariants: Variants = {
     x: 0,
     transition: {
       duration: 0.3,
-      ease: "easeOut",
+      ease: [0.25, 0.46, 0.45, 0.94], // cubic-bezier easeOut
     },
   },
 };
@@ -93,14 +93,14 @@ export const overlayVariants: Variants = {
     opacity: 1,
     transition: {
       duration: 0.2,
-      ease: "easeOut",
+      ease: [0.25, 0.46, 0.45, 0.94], // cubic-bezier easeOut
     },
   },
   exit: {
     opacity: 0,
     transition: {
       duration: 0.2,
-      ease: "easeIn",
+      ease: [0.25, 0.46, 0.45, 0.94], // cubic-bezier easeOut
     },
   },
 };
@@ -116,7 +116,7 @@ export const menuVariants: Variants = {
     opacity: 1,
     transition: {
       duration: 0.3,
-      ease: "easeOut",
+      ease: [0.25, 0.46, 0.45, 0.94], // cubic-bezier easeOut
     },
   },
   exit: {
@@ -124,7 +124,7 @@ export const menuVariants: Variants = {
     opacity: 0,
     transition: {
       duration: 0.3,
-      ease: "easeIn",
+      ease: [0.25, 0.46, 0.45, 0.94], // cubic-bezier easeOut
     },
   },
 };
@@ -136,14 +136,14 @@ export const imageVariants: Variants = {
     opacity: 1,
     transition: {
       duration: 0.4,
-      ease: "easeOut",
+      ease: [0.25, 0.46, 0.45, 0.94], // cubic-bezier easeOut
     },
   },
   exit: {
     opacity: 0,
     transition: {
       duration: 0.2,
-      ease: "easeIn",
+      ease: [0.25, 0.46, 0.45, 0.94], // cubic-bezier easeOut
     },
   },
 };
