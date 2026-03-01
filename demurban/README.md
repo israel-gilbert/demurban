@@ -1,6 +1,6 @@
 # DemUrban Storefront (Next.js + Paystack)
 
-Minimal fashion ecommerce storefront inspired by modern Framer layouts, but fully code-owned.
+Minimal fashion ecommerce
 
 ## Stack
 - Next.js (App Router) + Tailwind

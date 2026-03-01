@@ -1,28 +1,36 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { nanoid } from "nanoid";
+import { rateLimit, getClientIp } from "@/lib/rate-limiter";
+import {
+  safeErrorResponse,
+  logSecurityEvent,
+  checkFraudSignals,
+  recordPaymentAttempt,
+} from "@/lib/security";
 
 const CreateOrderSchema = z.object({
-  email: z.string().email(),
-  phone: z.string().optional(),
+  email: z.string().email().max(255),
+  phone: z.string().max(20).optional(),
   items: z
     .array(
       z.object({
-        productId: z.string().min(1),
+        productId: z.string().min(1).max(50),
         quantity: z.number().int().min(1).max(20),
-        variant: z.record(z.unknown()).optional(),
+        variant: z.record(z.string(), z.unknown()).optional(),
       })
     )
-    .min(1),
+    .min(1)
+    .max(50),
   shippingAddress: z.object({
-    fullName: z.string().min(2),
-    address1: z.string().min(3),
-    address2: z.string().optional(),
-    city: z.string().min(2),
-    state: z.string().min(2),
-    country: z.string().min(2),
-    postalCode: z.string().optional(),
+    fullName: z.string().min(2).max(255),
+    address1: z.string().min(3).max(255),
+    address2: z.string().max(255).optional(),
+    city: z.string().min(2).max(100),
+    state: z.string().min(2).max(100),
+    country: z.string().min(2).max(100),
+    postalCode: z.string().max(20).optional(),
   }),
 });
 
@@ -34,12 +42,56 @@ function orderNumber() {
   return `DU-${y}${m}${day}-${nanoid(6).toUpperCase()}`;
 }
 
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
+  const clientIp = getClientIp(request);
+
   try {
-    const body = await req.json();
+    // Rate limiting: IP-based (10 requests per 60 seconds)
+    const rateLimitKey = `checkout:${clientIp}`;
+    const rateLimitResult = await rateLimit(rateLimitKey, {
+      requests: parseInt(process.env.RATE_LIMIT_REQUESTS || "10"),
+      window: parseInt(process.env.RATE_LIMIT_WINDOW_MS || "60000"),
+    });
+
+    if (!rateLimitResult.success) {
+      logSecurityEvent("rate_limit_exceeded_checkout", {
+        ip: clientIp,
+        retryAfter: rateLimitResult.retryAfter,
+      });
+
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimitResult.retryAfter || 60),
+          },
+        }
+      );
+    }
+
+    const body = await request.json();
     const parsed = CreateOrderSchema.parse(body);
 
-    // Fetch products and compute totals server-side (do not trust client totals).
+    // Fraud detection: email velocity
+    const fraudSignals = checkFraudSignals(clientIp, parsed.email);
+    recordPaymentAttempt(clientIp, parsed.email);
+
+    if (fraudSignals.isHighRisk) {
+      logSecurityEvent("fraud_risk_detected_checkout", {
+        ip: clientIp,
+        email: parsed.email.substring(0, 5) + "***",
+        ipVelocity: fraudSignals.ipVelocity,
+        emailVelocity: fraudSignals.emailVelocity,
+      });
+
+      return NextResponse.json(
+        { error: "This action was blocked due to suspicious activity. Please contact support." },
+        { status: 403 }
+      );
+    }
+
+    // Fetch products and compute totals server-side (do not trust client totals)
     const productIds = parsed.items.map((i) => i.productId);
     const products = await prisma.product.findMany({
       where: { id: { in: productIds }, active: true },
@@ -72,9 +124,14 @@ export async function POST(req: Request) {
       };
     });
 
-    // Shipping logic: start simple. You can replace with zone-based rates later.
+    // Shipping logic: start simple
     const shipping = 0;
     const total = subtotal + shipping;
+
+    if (total < 0 || total > 10000000) {
+      // Prevent extreme values (max ~NGN 10M)
+      throw new Error("Invalid total amount");
+    }
 
     const reference = `DU_${nanoid(18)}`;
 
@@ -86,7 +143,7 @@ export async function POST(req: Request) {
         subtotal_kobo: subtotal,
         shipping_kobo: shipping,
         total_kobo: total,
-        customer_email: parsed.email,
+        customer_email: parsed.email.toLowerCase(),
         customer_phone: parsed.phone ?? null,
         shipping_address_json: parsed.shippingAddress,
         paystack_reference: reference,
@@ -97,15 +154,29 @@ export async function POST(req: Request) {
           create: {
             reference,
             event_type: "INITIALIZED_ORDER",
-            payload_json: { source: "checkout/create-order" },
+            payload_json: { source: "checkout/create-order", ip: clientIp },
           },
         },
       },
     });
 
+    logSecurityEvent("order_created", {
+      orderId: created.id,
+      total: total,
+      itemCount: orderItems.length,
+      ip: clientIp,
+    });
+
     return NextResponse.json({ orderId: created.id });
   } catch (err: any) {
-    const message = err?.message ?? "Failed to create order";
-    return NextResponse.json({ error: message }, { status: 400 });
+    logSecurityEvent("checkout_error", {
+      error: err?.message,
+      ip: clientIp,
+    });
+
+    return NextResponse.json(
+      safeErrorResponse(err),
+      { status: 400 }
+    );
   }
 }

@@ -18,6 +18,7 @@ export default function AnnouncementTicker({
     typeof window !== "undefined" ? window.localStorage.getItem(storageKey) === "1" : false;
 
   const [dismissed, setDismissed] = useState<boolean>(initialDismissed);
+  const [hovered, setHovered] = useState(false);
 
   const content = useMemo(() => {
     const m = messages?.[0];
@@ -34,9 +35,17 @@ export default function AnnouncementTicker({
   if (!content || dismissed) return null;
 
   return (
-    <div className="bg-accent text-accent-foreground">
-      <div className="mx-auto flex h-10 max-w-7xl items-center justify-center px-4 text-xs font-semibold uppercase tracking-wider md:px-6 lg:px-8">
-        <div className="truncate text-center">{content}</div>
+    <div className="bg-accent text-accent-foreground overflow-hidden">
+      <div
+        className="mx-auto flex h-10 max-w-7xl items-center justify-center px-4 text-xs font-semibold uppercase tracking-wider md:px-6 lg:px-8"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        {/* Marquee container */}
+        <div className={`flex-1 overflow-hidden ${!hovered ? 'animate-marquee' : ''}`}>
+          <div className="whitespace-nowrap">{content}</div>
+        </div>
+
         {dismissible ? (
           <button
             type="button"
@@ -46,7 +55,7 @@ export default function AnnouncementTicker({
                 window.localStorage.setItem(storageKey, "1");
               } catch {}
             }}
-            className="absolute right-4 shrink-0 rounded-lg p-1 hover:bg-accent-foreground/10"
+            className="shrink-0 ml-4 rounded-lg p-1 hover:bg-accent-foreground/10"
             aria-label="Dismiss announcement"
           >
             <X className="h-4 w-4" />

@@ -39,3 +39,19 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Security: NEVER commit detailed vulnerability or audit reports to public repos
+SECURITY_AUDIT.md
+SECURITY_SUMMARY.md
+VULNERABILITY_REPORT.md
+COMPLETION_REPORT.md
+SECURITY_IMPLEMENTATION.md
+SECURITY_DOCS_INDEX.md
+.security/
+security-docs/
+audit-results/
+
+# Keep these for developers (internal team only - ensure private repo)
+# SECURITY_QUICKSTART.md
+# SECURITY_CHECKLIST.md
+# SECURITY_README.md
