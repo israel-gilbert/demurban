@@ -245,4 +245,4 @@ export const countVariants: Variants = {
 };
 
 // Ticker CSS class
-export const tickerClasses = "animate-marquee hover:animation-pause";
+export const tickerClasses = "animate-marquee hover:[animation-play-state:paused]";
