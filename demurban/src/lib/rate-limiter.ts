@@ -45,7 +45,6 @@ if (typeof setInterval === "function") {
   }, SWEEP_INTERVAL_MS);
 
   // Avoid keeping the event loop alive just for the sweeper in Node.js
-  // @ts-expect-error Node.js-only API; ignored in other runtimes
   interval.unref?.();
 }
 

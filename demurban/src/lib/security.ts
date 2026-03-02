@@ -124,7 +124,6 @@ if (typeof setInterval === "function") {
   }, FRAUD_SWEEP_INTERVAL_MS);
 
   // Avoid keeping event loop alive in Node.js
-  // @ts-expect-error Node.js-only API; ignored in other runtimes
   interval.unref?.();
 }
 
