@@ -1,18 +1,44 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
-import { useTheme } from "@/providers/ThemeProvider";
 import { useEffect, useState } from "react";
 
 export default function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
 
   useEffect(() => {
     setMounted(true);
+    
+    // Get initial theme
+    const saved = localStorage.getItem("theme") as "light" | "dark" | null;
+    if (saved) {
+      setTheme(saved);
+    } else {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      setTheme(prefersDark ? "dark" : "light");
+    }
   }, []);
 
-  // Prevent hydration mismatch
+  const toggleTheme = () => {
+    if (!mounted) return;
+    
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+    
+    const html = document.documentElement;
+    if (newTheme === "light") {
+      html.classList.remove("dark");
+      html.classList.add("light");
+    } else {
+      html.classList.remove("light");
+      html.classList.add("dark");
+    }
+    
+    localStorage.setItem("theme", newTheme);
+  };
+
+  // Prevent hydration mismatch - render empty placeholder during SSR
   if (!mounted) {
     return (
       <div className="inline-flex h-10 w-10 items-center justify-center rounded-lg" />
