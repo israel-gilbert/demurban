@@ -21,11 +21,3 @@ export function getSql() {
   }
   return global.__sql;
 }
-
-// For backward compatibility, export as a getter
-export const sql = new Proxy(
-  {},
-  {
-    get: () => getSql(),
-  }
-) as ReturnType<typeof neon>;

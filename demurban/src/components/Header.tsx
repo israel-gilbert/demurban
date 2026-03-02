@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { Search, ShoppingBag, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import SearchModal from "./SearchModal";
+import ThemeToggle from "./ThemeToggle";
 import { overlayVariants, menuVariants } from "@/lib/motion";
 
 const nav = [
@@ -95,6 +96,7 @@ export default function Header() {
             >
               <Search className="h-5 w-5" />
             </button>
+            <ThemeToggle />
             <Link
               href="/cart"
               className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border px-4 text-sm font-medium text-foreground hover:bg-muted"

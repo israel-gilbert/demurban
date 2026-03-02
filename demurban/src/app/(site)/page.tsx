@@ -178,37 +178,6 @@ export default async function HomePage() {
           <ProductGrid products={newArrivals} />
         </section>
       )}
-
-      {/* Newsletter CTA */}
-      <section className="mx-auto w-full max-w-7xl px-4 py-16 md:px-6 md:py-20 lg:px-8">
-        <div className="rounded-xl border border-accent/30 bg-accent/5 p-8 md:p-12">
-          <div className="grid gap-8 md:grid-cols-2 md:items-center">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Stay Connected</p>
-              <h3 className="mt-2 text-2xl font-bold uppercase tracking-wider font-[var(--font-oswald)]">
-                Join the Movement
-              </h3>
-              <p className="mt-3 text-sm text-muted-foreground">
-                Be the first to know about new drops and exclusive offers.
-              </p>
-            </div>
-            <form className="flex flex-col gap-3 sm:flex-row">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="h-12 w-full rounded-lg border border-border bg-input px-4 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-                required
-              />
-              <button
-                type="submit"
-                className="h-12 shrink-0 rounded-lg bg-accent px-6 text-sm font-bold uppercase text-background hover:bg-accent/90"
-              >
-                Subscribe
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
