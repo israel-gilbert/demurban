@@ -98,7 +98,8 @@ export async function GET(request: NextRequest) {
 
     if (allValid) {
       // Atomic update - only if still PENDING (idempotency)
-      const updated = await prisma.order.update({
+      // Using updateMany + check affected count to ensure atomic "if still PENDING" update
+      const updated = await prisma.order.updateMany({
         where: { id: order.id, status: "PENDING" },
         data: {
           status: "PAID",
@@ -107,14 +108,25 @@ export async function GET(request: NextRequest) {
         },
       });
 
-      logSecurityEvent("order_marked_paid_via_callback", {
-        orderId: order.id,
-        reference,
-        amount: order.total_kobo,
-        ip: clientIp,
-      });
+      if (updated.count > 0) {
+        logSecurityEvent("order_marked_paid_via_callback", {
+          orderId: order.id,
+          reference,
+          amount: order.total_kobo,
+          ip: clientIp,
+        });
 
-      return NextResponse.redirect(new URL("/order/success", appUrl));
+        return NextResponse.redirect(new URL("/order/success", appUrl));
+      } else {
+        // Order status was already changed (race condition or duplicate callback)
+        logSecurityEvent("callback_order_status_mismatch", {
+          orderId: order.id,
+          reference,
+          actualStatus: order.status,
+          ip: clientIp,
+        });
+        return NextResponse.redirect(new URL("/order/failed", appUrl));
+      }
     } else {
       // Validation failed - log all details for fraud investigation
       logSecurityEvent("callback_validation_failed", {
@@ -131,13 +143,11 @@ export async function GET(request: NextRequest) {
         ip: clientIp,
       });
 
-      // Mark as FAILED only if still PENDING (atomic update to avoid race conditions)
-      if (order.status === "PENDING") {
-        await prisma.order.update({
-          where: { id: order.id, status: "PENDING" },
-          data: { status: "FAILED" },
-        });
-      }
+      // Mark as FAILED only if still PENDING (atomic update using updateMany)
+      const updated = await prisma.order.updateMany({
+        where: { id: order.id, status: "PENDING" },
+        data: { status: "FAILED" },
+      });
 
       return NextResponse.redirect(new URL("/order/failed", appUrl));
     }

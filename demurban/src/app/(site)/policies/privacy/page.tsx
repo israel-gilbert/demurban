@@ -4,6 +4,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 
+const LAST_UPDATED = "2026-03-02";
+
 const pageVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
@@ -26,7 +28,7 @@ export default function PrivacyPolicy() {
             Privacy Policy
           </h1>
           <p className="text-muted-foreground mb-8">
-            Last updated: {new Date().toLocaleDateString()}
+            Last updated: {LAST_UPDATED}
           </p>
 
           <div className="prose prose-invert max-w-none space-y-6">

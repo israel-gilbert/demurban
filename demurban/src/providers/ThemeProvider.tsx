@@ -13,7 +13,6 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>("dark");
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     // Apply initial theme immediately on mount
@@ -22,7 +21,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     
     setTheme(initialTheme);
     applyTheme(initialTheme);
-    setMounted(true);
   }, []);
 
   const applyTheme = (newTheme: Theme) => {
@@ -53,11 +51,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 export function useTheme() {
   const context = useContext(ThemeContext);
   if (context === undefined) {
-    // Return a safe default during SSR/prerendering
+    // During SSR, safely return default
     if (typeof window === "undefined") {
       return { theme: "dark" as Theme, toggleTheme: () => {} };
     }
-    // Before mount, return dark theme but don't throw
+    
+    // In development, warn if provider is missing (helps catch setup errors)
+    if (process.env.NODE_ENV === "development") {
+      console.warn("useTheme must be used within a ThemeProvider. Using default theme.");
+    }
+    
     return { theme: "dark" as Theme, toggleTheme: () => {} };
   }
   return context;
