@@ -63,9 +63,8 @@ export const hoverVariants: Variants = {
 
 // Container for staggering grid items (premium grid animation)
 export const containerVariants: Variants = {
-  hidden: { opacity: 1 },
+  hidden: {},
   visible: {
-    opacity: 1,
     transition: {
       staggerChildren: 0.1,
       delayChildren: 0,

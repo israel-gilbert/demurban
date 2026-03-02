@@ -17,6 +17,13 @@ const nav = [
   { label: "Contact", href: "/contact" },
 ];
 
+function getIsActive(pathname: string | null, href: string): boolean {
+  if (href === "/") {
+    return pathname === "/";
+  }
+  return pathname?.startsWith(href) ?? false;
+}
+
 export default function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -67,9 +74,7 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden items-center gap-8 md:flex">
             {nav.map((item) => {
-              const isActive = item.href === "/" 
-                ? pathname === "/" 
-                : pathname?.startsWith(item.href);
+              const isActive = getIsActive(pathname, item.href);
               return (
                 <Link
                   key={item.href}
@@ -134,9 +139,7 @@ export default function Header() {
               >
                 <nav className="flex flex-col px-4 py-4">
                   {nav.map((item) => {
-                    const isActive = item.href === "/" 
-                      ? pathname === "/" 
-                      : pathname?.startsWith(item.href);
+                    const isActive = getIsActive(pathname, item.href);
                     return (
                       <Link
                         key={item.href}
