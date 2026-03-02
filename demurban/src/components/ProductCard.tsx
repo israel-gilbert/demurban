@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import type { Product } from "@/lib/types";
 import { formatMoney } from "@/lib/format";
-import { hoverVariants, itemVariants } from "@/lib/motion";
+import { hoverVariants, itemVariants, badgeVariants } from "@/lib/motion";
 
 export default function ProductCard({ product }: { product: Product }) {
   const available = product.inventory_qty > 0;
@@ -15,7 +15,7 @@ export default function ProductCard({ product }: { product: Product }) {
     <motion.div variants={itemVariants} className="h-full">
       <Link
         href={`/shop/${product.slug}`}
-        className="group block h-full overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-accent/50 hover:shadow-lg hover:shadow-accent/5"
+        className="group block h-full overflow-hidden rounded-xl border border-border bg-card hover:border-accent/50 transition-colors"
       >
         <motion.div
           className="relative aspect-[3/4] w-full overflow-hidden bg-muted"
@@ -31,17 +31,34 @@ export default function ProductCard({ product }: { product: Product }) {
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
           />
           
+          {/* Premium overlay on hover */}
+          <motion.div 
+            className="absolute inset-0 bg-black/0 group-hover:bg-black/10"
+            transition={{ duration: 0.4 }}
+          />
+          
           {/* Badges */}
           <div className="absolute left-3 top-3 flex flex-col gap-2">
             {hasDiscount && (
-              <span className="rounded-md bg-accent px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-foreground">
+              <motion.span 
+                variants={badgeVariants}
+                initial="hidden"
+                animate="visible"
+                className="rounded-md bg-accent px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-foreground"
+              >
                 Sale
-              </span>
+              </motion.span>
             )}
             {product.tags?.includes("new") && (
-              <span className="rounded-md bg-foreground px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-background">
+              <motion.span 
+                variants={badgeVariants}
+                initial="hidden"
+                animate="visible"
+                transition={{ delay: 0.1 }}
+                className="rounded-md bg-foreground px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-background"
+              >
                 New
-              </span>
+              </motion.span>
             )}
           </div>
 
@@ -55,9 +72,14 @@ export default function ProductCard({ product }: { product: Product }) {
         </motion.div>
 
         <div className="p-4">
-          <p className="text-xs font-medium uppercase tracking-wider text-accent">
+          <motion.p 
+            className="text-xs font-medium uppercase tracking-wider text-accent"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+          >
             {product.category}
-          </p>
+          </motion.p>
           <h3 className="mt-1 text-sm font-semibold leading-tight text-card-foreground line-clamp-2">
             {product.title}
           </h3>
@@ -76,12 +98,15 @@ export default function ProductCard({ product }: { product: Product }) {
           {product.tags?.length ? (
             <div className="mt-3 flex flex-wrap gap-1">
               {product.tags.slice(0, 2).map((t) => (
-                <span
+                <motion.span
                   key={t}
-                  className="rounded-md border border-border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
+                  variants={badgeVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="rounded-md border border-border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground hover:border-accent hover:text-accent cursor-default"
                 >
                   {t}
-                </span>
+                </motion.span>
               ))}
             </div>
           ) : null}
