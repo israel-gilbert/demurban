@@ -131,10 +131,10 @@ export async function GET(request: NextRequest) {
         ip: clientIp,
       });
 
-      // Mark as FAILED only if still PENDING
+      // Mark as FAILED only if still PENDING (atomic update to avoid race conditions)
       if (order.status === "PENDING") {
         await prisma.order.update({
-          where: { id: order.id },
+          where: { id: order.id, status: "PENDING" },
           data: { status: "FAILED" },
         });
       }

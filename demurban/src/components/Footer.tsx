@@ -133,7 +133,7 @@ export default function Footer() {
                 Email Us
               </a>
               <Link
-                href="/"
+                href="/press-kit"
                 className="text-sm text-muted-foreground hover:text-accent transition-colors"
               >
                 Press Kit
