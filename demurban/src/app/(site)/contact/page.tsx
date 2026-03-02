@@ -1,17 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import { Mail, Instagram, MapPin, Phone } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Mail, Instagram, MapPin } from "lucide-react";
 
 export default function ContactPage() {
   const [formState, setFormState] = useState({ name: "", email: "", subject: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real implementation, this would send to an email service
+    // TODO: Connect to an email service (Resend, SendGrid, etc.)
     setSubmitted(true);
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       setFormState({ name: "", email: "", subject: "", message: "" });
       setSubmitted(false);
     }, 3000);

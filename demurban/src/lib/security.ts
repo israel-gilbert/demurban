@@ -76,13 +76,12 @@ const FRAUD_SWEEP_INTERVAL_MS = 60_000; // 1 minute
  * Sweep stale entries from fraud store to prevent unbounded growth
  */
 function sweepFraudStore(now = Date.now()) {
-  const oneMinuteAgo = now - 60000;
   const oneHourAgo = now - 3600000;
 
-  // Remove expired entries for all keys
+  // Remove expired entries for all keys by rebuilding the array
   const entries = Object.entries(fraudStore);
   for (const [key, value] of entries) {
-    // Filter out old entries
+    // Rebuild array with only non-expired entries to avoid splice index issues
     fraudStore[key] = value.filter((t) => t.timestamp > oneHourAgo);
     
     // Remove key if empty
@@ -91,11 +90,15 @@ function sweepFraudStore(now = Date.now()) {
     }
   }
 
-  // Enforce max store size by evicting oldest entries
-  const keys = Object.keys(fraudStore);
-  if (keys.length <= MAX_FRAUD_STORE_SIZE) return;
+  // Enforce max store size by counting total entries (not just keys)
+  let totalEntries = 0;
+  for (const values of Object.values(fraudStore)) {
+    totalEntries += values.length;
+  }
 
-  // Sort all entries by timestamp across all keys and remove oldest
+  if (totalEntries <= MAX_FRAUD_STORE_SIZE) return;
+
+  // Collect all entries and sort by timestamp, oldest first
   const allEntries: Array<[string, number, number]> = [];
   for (const [key, values] of Object.entries(fraudStore)) {
     for (let i = 0; i < values.length; i++) {
@@ -107,8 +110,10 @@ function sweepFraudStore(now = Date.now()) {
   const targetSize = Math.floor(MAX_FRAUD_STORE_SIZE * 0.75); // Keep 75% to avoid thrashing
   const toDelete = allEntries.slice(0, Math.max(0, allEntries.length - targetSize));
 
+  // Delete from end to start so indices remain valid
+  toDelete.reverse();
   for (const [key, idx] of toDelete) {
-    if (fraudStore[key]) {
+    if (fraudStore[key]?.[idx]) {
       fraudStore[key].splice(idx, 1);
       if (fraudStore[key].length === 0) {
         delete fraudStore[key];
@@ -143,7 +148,13 @@ export function checkFraudSignals(
   fraudStore[ip] = (fraudStore[ip] || []).filter((t) => t.timestamp > oneMinuteAgo);
   fraudStore[email] = (fraudStore[email] || []).filter((t) => t.timestamp > oneHourAgo);
 
-  if (Object.keys(fraudStore).length > MAX_FRAUD_STORE_SIZE * 0.9) {
+  // Check total entries, not just keys
+  let totalEntries = 0;
+  for (const values of Object.values(fraudStore)) {
+    totalEntries += values.length;
+  }
+
+  if (totalEntries > MAX_FRAUD_STORE_SIZE * 0.9) {
     sweepFraudStore(now);
   }
 
