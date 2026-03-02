@@ -204,7 +204,7 @@ export default function CheckoutPage() {
             disabled={loading}
             className="mt-6 inline-flex h-11 w-full items-center justify-center rounded-lg bg-accent px-6 text-sm font-medium text-background hover:bg-accent/90 disabled:opacity-50 transition-colors"
           >
-            {loading ? "Processing…" : "Pay with Paystack"}
+            {loading ? "Processing…" : "Pay Now"}
           </button>
 
           <p className="text-xs text-muted-foreground">
