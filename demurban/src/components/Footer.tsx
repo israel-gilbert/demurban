@@ -132,12 +132,6 @@ export default function Footer() {
               >
                 Email Us
               </a>
-              <Link
-                href="/press-kit"
-                className="text-sm text-muted-foreground hover:text-accent transition-colors"
-              >
-                Press Kit
-              </Link>
             </nav>
           </div>
 
