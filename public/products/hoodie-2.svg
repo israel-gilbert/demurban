@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
+  <rect width="1200" height="1600" fill="#f4f4f5"/>
+  <rect x="90" y="120" width="1020" height="1360" rx="48" fill="#ffffff" stroke="#e4e4e7"/>
+  <g fill="#71717a" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto" text-anchor="middle">
+    <text x="600" y="760" font-size="48" font-weight="600">DemUrban</text>
+    <text x="600" y="820" font-size="26">Product Image Placeholder</text>
+  </g>
+</svg>
