@@ -3,7 +3,7 @@ import { z } from "zod";
 /**
  * Safe error response - no stack traces, no sensitive info
  */
-export function safeErrorResponse(error: unknown, statusCode: number = 400) {
+export function safeErrorResponse(error: unknown) {
   let message = "An error occurred";
 
   if (error instanceof z.ZodError) {
@@ -69,6 +69,64 @@ export interface FraudSignals {
 }
 
 const fraudStore: Record<string, { timestamp: number; count: number }[]> = {};
+const MAX_FRAUD_STORE_SIZE = 10_000;
+const FRAUD_SWEEP_INTERVAL_MS = 60_000; // 1 minute
+
+/**
+ * Sweep stale entries from fraud store to prevent unbounded growth
+ */
+function sweepFraudStore(now = Date.now()) {
+  const oneMinuteAgo = now - 60000;
+  const oneHourAgo = now - 3600000;
+
+  // Remove expired entries for all keys
+  const entries = Object.entries(fraudStore);
+  for (const [key, value] of entries) {
+    // Filter out old entries
+    fraudStore[key] = value.filter((t) => t.timestamp > oneHourAgo);
+    
+    // Remove key if empty
+    if (fraudStore[key].length === 0) {
+      delete fraudStore[key];
+    }
+  }
+
+  // Enforce max store size by evicting oldest entries
+  const keys = Object.keys(fraudStore);
+  if (keys.length <= MAX_FRAUD_STORE_SIZE) return;
+
+  // Sort all entries by timestamp across all keys and remove oldest
+  const allEntries: Array<[string, number, number]> = [];
+  for (const [key, values] of Object.entries(fraudStore)) {
+    for (let i = 0; i < values.length; i++) {
+      allEntries.push([key, i, values[i].timestamp]);
+    }
+  }
+
+  allEntries.sort(([, , a], [, , b]) => a - b); // oldest first
+  const targetSize = Math.floor(MAX_FRAUD_STORE_SIZE * 0.75); // Keep 75% to avoid thrashing
+  const toDelete = allEntries.slice(0, Math.max(0, allEntries.length - targetSize));
+
+  for (const [key, idx] of toDelete) {
+    if (fraudStore[key]) {
+      fraudStore[key].splice(idx, 1);
+      if (fraudStore[key].length === 0) {
+        delete fraudStore[key];
+      }
+    }
+  }
+}
+
+// Periodically sweep fraud store in the background
+if (typeof setInterval === "function") {
+  const interval = setInterval(() => {
+    sweepFraudStore();
+  }, FRAUD_SWEEP_INTERVAL_MS);
+
+  // Avoid keeping event loop alive in Node.js
+  // @ts-expect-error Node.js-only API; ignored in other runtimes
+  interval.unref?.();
+}
 
 /**
  * Track fraud signals (IP velocity, email velocity)
@@ -82,9 +140,13 @@ export function checkFraudSignals(
   const oneMinuteAgo = now - 60000;
   const oneHourAgo = now - 3600000;
 
-  // Clean old entries
+  // Clean old entries and opportunistically sweep if store is large
   fraudStore[ip] = (fraudStore[ip] || []).filter((t) => t.timestamp > oneMinuteAgo);
   fraudStore[email] = (fraudStore[email] || []).filter((t) => t.timestamp > oneHourAgo);
+
+  if (Object.keys(fraudStore).length > MAX_FRAUD_STORE_SIZE * 0.9) {
+    sweepFraudStore(now);
+  }
 
   const ipVelocity = fraudStore[ip]?.length || 0;
   const emailVelocity = fraudStore[email]?.length || 0;

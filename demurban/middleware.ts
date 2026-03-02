@@ -8,11 +8,16 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
+  const isProduction = process.env.NODE_ENV === "production";
+
   // Content Security Policy
-  response.headers.set(
-    "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.paystack.co; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' *.paystack.co api.paystack.co; frame-src 'self' *.paystack.co"
-  );
+  // In production, avoid 'unsafe-inline' and 'unsafe-eval' to preserve CSP XSS protections.
+  // For local development, we allow them to avoid breaking existing inline/eval-based scripts.
+  const csp = isProduction
+    ? "default-src 'self'; script-src 'self' *.paystack.co; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' *.paystack.co api.paystack.co; frame-src 'self' *.paystack.co"
+    : "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.paystack.co; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' *.paystack.co api.paystack.co; frame-src 'self' *.paystack.co";
+
+  response.headers.set("Content-Security-Policy", csp);
 
   // HSTS - Force HTTPS
   if (process.env.NODE_ENV === "production") {
