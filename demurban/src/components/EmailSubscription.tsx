@@ -1,18 +1,28 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
 export default function EmailSubscription({ inFooter = false }: { inFooter?: boolean }) {
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     // TODO: Connect to your email service (Mailchimp, Resend, etc.)
     console.log("Subscribe:", email);
     setIsSubmitted(true);
-    setTimeout(() => {
+    
+    timeoutRef.current = setTimeout(() => {
       setEmail("");
       setIsSubmitted(false);
     }, 2000);

@@ -63,9 +63,8 @@ export const hoverVariants: Variants = {
 
 // Container for staggering grid items (premium grid animation)
 export const containerVariants: Variants = {
-  hidden: { opacity: 1 },
+  hidden: {},
   visible: {
-    opacity: 1,
     transition: {
       staggerChildren: 0.1,
       delayChildren: 0,
@@ -245,4 +244,4 @@ export const countVariants: Variants = {
 };
 
 // Ticker CSS class
-export const tickerClasses = "animate-marquee hover:animation-pause";
+export const tickerClasses = "animate-marquee hover:[animation-play-state:paused]";

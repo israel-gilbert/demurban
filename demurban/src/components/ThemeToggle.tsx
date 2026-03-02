@@ -2,41 +2,15 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTheme } from "@/providers/ThemeProvider";
 
 export default function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
-    
-    // Get initial theme
-    const saved = localStorage.getItem("theme") as "light" | "dark" | null;
-    if (saved) {
-      setTheme(saved);
-    } else {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      setTheme(prefersDark ? "dark" : "light");
-    }
   }, []);
-
-  const toggleTheme = () => {
-    if (!mounted) return;
-    
-    const newTheme = theme === "dark" ? "light" : "dark";
-    setTheme(newTheme);
-    
-    const html = document.documentElement;
-    if (newTheme === "light") {
-      html.classList.remove("dark");
-      html.classList.add("light");
-    } else {
-      html.classList.remove("light");
-      html.classList.add("dark");
-    }
-    
-    localStorage.setItem("theme", newTheme);
-  };
 
   // Prevent hydration mismatch - render empty placeholder during SSR
   if (!mounted) {
