@@ -82,24 +82,6 @@ export default function Footer() {
                 All Products
               </Link>
               <Link
-                href="/shop?category=MEN"
-                className="text-sm text-muted-foreground hover:text-accent transition-colors"
-              >
-                Men
-              </Link>
-              <Link
-                href="/shop?category=WOMEN"
-                className="text-sm text-muted-foreground hover:text-accent transition-colors"
-              >
-                Women
-              </Link>
-              <Link
-                href="/shop?category=KIDS"
-                className="text-sm text-muted-foreground hover:text-accent transition-colors"
-              >
-                Kids
-              </Link>
-              <Link
                 href="/shop?tag=new"
                 className="text-sm text-muted-foreground hover:text-accent transition-colors"
               >
