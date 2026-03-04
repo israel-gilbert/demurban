@@ -1,6 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import ProductGrid from "@/components/ProductGrid";
 import CollectionsShowcase from "@/components/CollectionsShowcase";
 import WhatDefinesOurWear from "@/components/WhatDefinesOurWear";
@@ -26,23 +25,23 @@ export default async function HomePage() {
   const newArrivals = products.filter((p) => p.tags?.includes("new")).slice(0, 4);
   const heroProducts = products.slice(0, 7);
 
-  // Create collection data from products
+  // IMPORTANT: priceRange is now in KOBO (₦ * 100)
   const collections = [
     {
       id: "essentials",
       name: "Core Essentials",
       description: "Premium basics designed for everyday wear. Perfect foundation pieces for any wardrobe.",
-      priceRange: { min: 45, max: 120 },
-      image: "/images/placeholder.jpg",
+      priceRange: { min: 2500000, max: 8500000 }, // ₦25,000 — ₦85,000
+      image: "/images/dem6.png",
       href: "/shop?tag=essentials",
-      tag: "Unisex",
+      tag: "For everyone",
     },
     {
       id: "limited",
       name: "Limited Editions",
       description: "Exclusive pieces in limited quantities. Get them before they're gone.",
-      priceRange: { min: 65, max: 180 },
-      image: "/images/placeholder.jpg",
+      priceRange: { min: 3500000, max: 12000000 }, // ₦35,000 — ₦120,000
+      image: "/images/dem3.jpg",
       href: "/shop?tag=limited",
       tag: "Limited",
     },
@@ -50,8 +49,8 @@ export default async function HomePage() {
       id: "trending",
       name: "Trending Now",
       description: "The hottest pieces right now. What everyone's wearing.",
-      priceRange: { min: 55, max: 150 },
-      image: "/images/placeholder.jpg",
+      priceRange: { min: 3000000, max: 10000000 }, // ₦30,000 — ₦100,000
+      image: "/images/dem0.jpg",
       href: "/shop?tag=trending",
       tag: "Trending",
     },
@@ -59,16 +58,16 @@ export default async function HomePage() {
       id: "seasonal",
       name: "Seasonal Collection",
       description: "Fresh styles for the season. Stay ahead of the curve.",
-      priceRange: { min: 50, max: 160 },
-      image: "/images/placeholder.jpg",
+      priceRange: { min: 2800000, max: 11000000 }, // ₦28,000 — ₦110,000
+      image: "/images/dem4.jpg",
       href: "/shop?tag=seasonal",
     },
     {
       id: "bestsellers",
       name: "Best Sellers",
       description: "Customer favorites that keep coming back. Tested and loved by the community.",
-      priceRange: { min: 40, max: 140 },
-      image: "/images/placeholder.jpg",
+      priceRange: { min: 2000000, max: 9500000 }, // ₦20,000 — ₦95,000
+      image: "/images/dem10.jpg",
       href: "/shop?sort=popular",
     },
   ];
@@ -79,11 +78,7 @@ export default async function HomePage() {
       <AnimatedSection className="relative flex h-[600px] md:h-[700px] lg:h-[800px] flex-col items-center justify-center overflow-hidden bg-black">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0">
-          <img
-            src="/images/placeholder.jpg"
-            alt="DEM Urban Hero"
-            className="h-full w-full object-cover"
-          />
+          <img src="/images/placeholder.jpeg" alt="DEM Urban Hero" className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/70"></div>
         </div>
 
@@ -106,7 +101,8 @@ export default async function HomePage() {
 
           {/* Description */}
           <p className="text-base md:text-lg text-white/90 mb-8 leading-relaxed max-w-xl">
-            Discover unisex streetwear designed for those who refuse to blend in. Premium pieces that celebrate culture, creativity, and self-expression.
+            Discover unisex streetwear designed for those who refuse to blend in. Premium pieces that celebrate culture, creativity, and
+            self-expression.
           </p>
 
           {/* CTAs */}
@@ -137,7 +133,7 @@ export default async function HomePage() {
                   className="group relative shrink-0 h-20 w-20 md:h-24 md:w-24 rounded-lg overflow-hidden border-2 border-transparent hover:border-accent transition-all"
                 >
                   <img
-                    src={product.images?.[0] ?? "/images/placeholder.jpg"}
+                    src={product.images?.[0] ?? "images/community1.jpg"}
                     alt={product.title}
                     className="h-full w-full object-cover group-hover:scale-110 transition-transform"
                   />
@@ -169,19 +165,21 @@ export default async function HomePage() {
         <AnimatedSection className="mx-auto w-full max-w-7xl px-4 py-16 md:px-6 md:py-20 lg:px-8">
           <div className="flex items-end justify-between gap-4 mb-8">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Latest Drop</p>
-              <h2 className="mt-2 text-2xl font-bold uppercase tracking-wider font-[var(--font-oswald)]">
+              <p className="text-xs uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">Latest Drop</p>
+              <h2 className="mt-2 text-2xl md:text-3xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">
                 New Arrivals
               </h2>
             </div>
+
             <Link
               href="/shop?tag=new"
-              className="group flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-accent"
+              className="group flex items-center gap-2 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-50 transition"
             >
               View all
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
+
           <ProductGrid products={newArrivals} />
         </AnimatedSection>
       )}

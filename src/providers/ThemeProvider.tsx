@@ -12,32 +12,39 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Start with a value derived from the DOM to avoid hydration mismatch.
-  // Default theme is dark (no class on <html>). Light theme is html.light.
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof document === "undefined") return "dark";
-    return document.documentElement.classList.contains("light") ? "light" : "dark";
-  });
+  const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
-    // Sync state with whatever the pre-hydration script set.
-    const current = document.documentElement.classList.contains("light") ? "light" : "dark";
-    setTheme(current);
+    const saved = localStorage.getItem("theme") as Theme | null;
+
+    if (saved === "light" || saved === "dark") {
+      applyTheme(saved);
+      setTheme(saved);
+    } else {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const initial = prefersDark ? "dark" : "light";
+      applyTheme(initial);
+      setTheme(initial);
+    }
   }, []);
 
-  const applyTheme = (newTheme: Theme) => {
+  function applyTheme(newTheme: Theme) {
     const html = document.documentElement;
-    // Dark is default (no class). Light uses html.light.
-    if (newTheme === "light") html.classList.add("light");
-    else html.classList.remove("light");
-    localStorage.setItem("theme", newTheme);
-  };
 
-  const toggleTheme = () => {
-    const newTheme: Theme = theme === "dark" ? "light" : "dark";
-    setTheme(newTheme);
-    applyTheme(newTheme);
-  };
+    if (newTheme === "dark") {
+      html.classList.add("dark");
+    } else {
+      html.classList.remove("dark");
+    }
+
+    localStorage.setItem("theme", newTheme);
+  }
+
+  function toggleTheme() {
+    const next: Theme = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    applyTheme(next);
+  }
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
@@ -48,18 +55,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
 export function useTheme() {
   const context = useContext(ThemeContext);
-  if (context === undefined) {
-    // During SSR, safely return default
-    if (typeof window === "undefined") {
-      return { theme: "dark" as Theme, toggleTheme: () => {} };
-    }
-    
-    // In development, warn if provider is missing (helps catch setup errors)
-    if (process.env.NODE_ENV === "development") {
-      console.warn("useTheme must be used within a ThemeProvider. Using default theme.");
-    }
-    
-    return { theme: "dark" as Theme, toggleTheme: () => {} };
-  }
+  if (!context) throw new Error("useTheme must be used within ThemeProvider");
   return context;
 }

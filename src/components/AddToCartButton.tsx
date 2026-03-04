@@ -34,7 +34,9 @@ export default function AddToCartButton(props: {
         setAdded(true);
         window.setTimeout(() => setAdded(false), 1200);
       }}
-      className="inline-flex h-11 items-center justify-center rounded-xl bg-zinc-950 px-5 text-sm font-medium text-white hover:bg-zinc-900 disabled:opacity-50"
+      className={`inline-flex h-11 items-center justify-center rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-6 text-sm font-semibold tracking-wide hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed ${
+        added ? "opacity-90" : ""
+      }`}
     >
       {label}
     </button>

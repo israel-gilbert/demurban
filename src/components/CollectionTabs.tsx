@@ -16,12 +16,11 @@ export default function CollectionTabs({
   const sp = useSearchParams();
 
   return (
-    <div className="relative flex items-center gap-2 overflow-x-auto pb-2">
+    <div className="relative flex w-fit items-center gap-2 rounded-full border border-black/10 dark:border-white/10 bg-neutral-100 dark:bg-neutral-900 p-1">
       {tabs.map((t) => {
         const active = t.value === value;
         let href = t.href;
-        
-        // Only compute dynamic href if not provided
+
         if (!href) {
           const next = new URLSearchParams(sp.toString());
           if (t.value === "all") next.delete("collection");
@@ -33,20 +32,25 @@ export default function CollectionTabs({
           <Link
             key={t.value}
             href={href}
-            className={`relative inline-flex h-10 shrink-0 items-center justify-center rounded-lg border px-5 text-sm font-medium uppercase tracking-wider transition-colors ${
-              active
-                ? "border-accent text-accent"
-                : "border-border text-muted-foreground hover:border-accent hover:text-accent"
-            }`}
+            className="relative z-10 inline-flex h-9 items-center justify-center rounded-full px-5 text-sm font-medium text-neutral-600 dark:text-neutral-300 transition-colors hover:text-neutral-900 dark:hover:text-neutral-50"
           >
-            {t.label}
             {active && (
               <motion.div
-                layoutId="tab-underline"
-                className="absolute inset-0 rounded-lg border-2 border-accent"
-                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                layoutId="active-tab"
+                className="absolute inset-0 rounded-full bg-white dark:bg-neutral-800"
+                transition={{ type: "spring", stiffness: 400, damping: 35 }}
               />
             )}
+
+            <span
+              className={`relative ${
+                active
+                  ? "text-neutral-900 dark:text-neutral-50"
+                  : ""
+              }`}
+            >
+              {t.label}
+            </span>
           </Link>
         );
       })}

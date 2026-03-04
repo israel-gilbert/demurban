@@ -1,34 +1,35 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useSearchParams } from "next/navigation";
-import CollectionTabs from "@/components/CollectionTabs";
-import { itemVariants } from "@/lib/motion";
+import { containerVariants, itemVariants } from "@/lib/motion";
 
 export default function ShopHeader() {
-  const sp = useSearchParams();
-  const current = (sp.get("collection") || "all").toLowerCase();
-  const tabs = [
-    { label: "All", value: "all" },
-    { label: "Latest Drop", value: "latest" },
-    { label: "Archive", value: "archive" },
-  ];
   return (
-    <>
-      <motion.div variants={itemVariants}>
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">
-          Premium Collection
-        </p>
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground font-[var(--font-oswald)] uppercase mb-3">
-          DEM Shop
-        </h1>
-      </motion.div>
-      <motion.p variants={itemVariants} className="text-base text-muted-foreground max-w-2xl leading-relaxed">
-        Explore our curated collection of premium streetwear. Where style meets substance—bold pieces designed without compromise.
+    <motion.section
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="mb-8"
+    >
+      <motion.p
+        variants={itemVariants}
+        className="text-sm tracking-[0.2em] uppercase text-neutral-500 dark:text-neutral-400"
+      >
+        Premium Collection
       </motion.p>
-      <div className="mt-8">
-        <CollectionTabs tabs={tabs} value={current} />
-      </div>
-    </>
+
+      <motion.h1
+  variants={itemVariants}
+  className="mt-3 text-4xl md:text-5xl font-semibold tracking-tight text-[color:var(--foreground)]"
+>
+  DEM Shop
+</motion.h1>
+      <motion.p
+  variants={itemVariants}
+  className="mt-4 text-base text-[color:var(--muted-foreground)] max-w-2xl leading-relaxed"
+>
+  Explore our curated collection of premium streetwear. Where style meets substance—bold pieces designed without compromise.
+</motion.p>
+    </motion.section>
   );
 }

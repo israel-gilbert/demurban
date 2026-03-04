@@ -19,27 +19,20 @@ export default function ShopLayout({ header, filters, content }: ShopLayoutProps
       variants={pageVariants}
     >
       {/* Header */}
-      <motion.div variants={sectionVariants} initial="hidden" animate="visible" className="mb-12">
-        {header}
-      </motion.div>
+      <div className="mb-12">
+  {header}
+</div>
 
-      <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
+      <div className="grid gap-8 lg:gap-10 lg:grid-cols-[300px_1fr]">
         {/* Sidebar Filters */}
-        <motion.aside 
-          className="lg:sticky lg:top-24 lg:self-start"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          {filters}
+        <motion.aside className="lg:sticky lg:top-24 lg:self-start" variants={itemVariants}>
+          <div className="rounded-3xl bg-neutral-100 dark:bg-neutral-900 border border-black/5 dark:border-white/10 p-5 md:p-6 shadow-sm">
+            {filters}
+          </div>
         </motion.aside>
 
         {/* Products Grid */}
-        <motion.main
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
+        <motion.main variants={itemVariants}>
           {content}
         </motion.main>
       </div>

@@ -17,7 +17,7 @@ export default function AboutPage() {
         </div>
         <div className="aspect-video rounded-2xl border border-border bg-muted overflow-hidden">
           <img
-            src="/images/placeholder.jpg"
+            src="/images/logo.png"
             alt="DEM Urban Store"
             className="h-full w-full object-cover"
           />

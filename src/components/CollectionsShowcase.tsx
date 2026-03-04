@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { formatNGNFromKobo } from "@/lib/money";
 
 interface Collection {
   id: string;
   name: string;
   description: string;
+  // IMPORTANT: min/max should be KOBO (₦ * 100)
   priceRange: { min: number; max: number };
   image: string;
   href: string;
@@ -23,14 +24,18 @@ export default function CollectionsShowcase({ collections }: CollectionsShowcase
     <section className="mx-auto w-full max-w-7xl px-4 py-16 md:px-6 md:py-20 lg:px-8">
       {/* Header */}
       <div className="flex flex-col gap-2 mb-12">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Our Collections</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
+          Our Collections
+        </p>
+
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <h2 className="text-3xl md:text-4xl font-bold uppercase tracking-wider font-[var(--font-oswald)]">
+          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">
             Defined by Simplicity
           </h2>
+
           <Link
             href="/shop"
-            className="inline-flex h-10 items-center justify-center rounded-full bg-foreground px-5 text-xs font-bold uppercase text-background hover:bg-foreground/90 transition-colors w-fit"
+            className="inline-flex h-10 items-center justify-center rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-5 text-xs font-semibold tracking-wide hover:opacity-90 transition w-fit"
           >
             Shop All Items
           </Link>
@@ -40,7 +45,6 @@ export default function CollectionsShowcase({ collections }: CollectionsShowcase
       {/* Masonry Grid */}
       <div className="grid gap-4 auto-rows-max md:grid-cols-3">
         {collections.map((collection, idx) => {
-          // Create masonry layout: first item spans 2x2, then alternate
           let gridClass = "md:col-span-2 md:row-span-2";
           if (idx === 0) {
             gridClass = "md:col-span-2 md:row-span-2";
@@ -58,29 +62,29 @@ export default function CollectionsShowcase({ collections }: CollectionsShowcase
             <Link
               key={collection.id}
               href={collection.href}
-              className={`group relative overflow-hidden rounded-2xl bg-muted transition-all hover:shadow-lg hover:shadow-accent/10 ${gridClass}`}
+              className={`group relative overflow-hidden rounded-3xl bg-neutral-100 dark:bg-neutral-900 border border-black/5 dark:border-white/10 shadow-sm transition ${gridClass}`}
             >
               {/* Image Background */}
               <div className="absolute inset-0 h-full w-full">
                 <img
                   src={collection.image}
                   alt={collection.name}
-                  className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="h-full w-full object-cover group-hover:scale-[1.04] transition-transform duration-300 ease-out"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
               </div>
 
               {/* Content Overlay - Bottom Aligned */}
               <div className="relative z-10 flex h-full flex-col justify-end p-6 md:p-8">
                 {/* Tag */}
                 {collection.tag && (
-                  <div className="mb-4 inline-flex w-fit rounded-full bg-background/90 backdrop-blur-sm px-3 py-1.5 text-xs font-bold uppercase text-foreground">
+                  <div className="mb-4 inline-flex w-fit rounded-full bg-white/90 dark:bg-neutral-950/80 backdrop-blur px-3 py-1.5 text-xs font-semibold tracking-wide text-neutral-900 dark:text-neutral-50">
                     {collection.tag}
                   </div>
                 )}
 
                 {/* Title */}
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-2 line-clamp-2 font-[var(--font-oswald)] uppercase">
+                <h3 className="text-xl md:text-2xl font-semibold text-white mb-2 line-clamp-2 tracking-tight">
                   {collection.name}
                 </h3>
 
@@ -90,21 +94,23 @@ export default function CollectionsShowcase({ collections }: CollectionsShowcase
                 </p>
 
                 {/* Price Range & CTA */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex h-6 w-6 items-center justify-center rounded bg-white/20">
-                      💰
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/90 dark:bg-neutral-950/80 border border-black/10 dark:border-white/10 text-sm font-semibold text-neutral-900 dark:text-neutral-50">
+                      ₦
                     </span>
-                    <span className="text-xs text-white/70">
-                      ${collection.priceRange.min.toLocaleString()} – ${collection.priceRange.max.toLocaleString()}
-                    </span>
+
+                    <div className="leading-tight">
+                      <div className="text-[11px] text-white/70">Pricing start from:</div>
+                      <div className="text-sm font-medium text-white">
+                        {formatNGNFromKobo(collection.priceRange.min)} — {formatNGNFromKobo(collection.priceRange.max)}
+                      </div>
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    className="inline-flex h-8 items-center justify-center rounded-full bg-background px-3 text-xs font-bold uppercase text-foreground hover:bg-background/90 transition-colors"
-                  >
+
+                  <span className="inline-flex h-9 items-center justify-center rounded-full bg-white dark:bg-neutral-950 border border-black/10 dark:border-white/10 px-4 text-xs font-semibold tracking-wide text-neutral-900 dark:text-neutral-50 group-hover:opacity-90 transition">
                     All collections
-                  </button>
+                  </span>
                 </div>
               </div>
             </Link>

@@ -4,7 +4,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useCallback, useState, useTransition } from "react";
 import { SlidersHorizontal, X, ChevronDown } from "lucide-react";
 import type { SortOption } from "@/lib/server-actions";
-import { formatMoney } from "@/lib/format";
+import { formatNGNFromKobo } from "@/lib/money";
 
 interface ShopFiltersProps {
   availableTags: string[];
@@ -179,7 +179,7 @@ export default function ShopFilters({ availableTags, priceRange }: ShopFiltersPr
           </div>
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          Range: {formatMoney(priceRange.min, "NGN")} - {formatMoney(priceRange.max, "NGN")}
+        Range: {formatNGNFromKobo(priceRange.min)} — {formatNGNFromKobo(priceRange.max)}
         </p>
       </div>
 

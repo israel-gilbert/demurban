@@ -1,219 +1,165 @@
 import { Variants } from "framer-motion";
 
 /**
- * Premium fashion commerce motion system
- * High-end animations for luxury streetwear aesthetic
+ * Wearix-style motion system
+ * Subtle, consistent, premium (no bouncy / no dramatic movement)
  */
 
-// Hero page load: fade in + subtle y slide (premium entrance)
+const easeOut: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+// Page load: gentle fade + small y
 export const pageVariants: Variants = {
-  hidden: {
-    opacity: 0,
-    y: 20,
-  },
+  hidden: { opacity: 0, y: 12 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.6,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
+    transition: { duration: 0.45, ease: easeOut },
   },
 };
 
-// Section reveal on scroll with stagger (sophisticated cascade)
+// Section reveal: fade only + controlled stagger (not slow)
 export const sectionVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.12,
-      delayChildren: 0.2,
+      staggerChildren: 0.08,
+      delayChildren: 0.05,
     },
   },
 };
 
-// Individual item for stagger (premium entrance)
+// Item reveal: fade + tiny y
 export const itemVariants: Variants = {
-  hidden: {
-    opacity: 0,
-    y: 20,
-  },
+  hidden: { opacity: 0, y: 14 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.5,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
+    transition: { duration: 0.4, ease: easeOut },
   },
 };
 
-// Product card hover effect (sophisticated scale)
+// Hover: subtle scale (Wearix feel)
 export const hoverVariants: Variants = {
   initial: { scale: 1 },
   hover: {
-    scale: 1.08,
-    transition: {
-      duration: 0.4,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
+    scale: 1.04,
+    transition: { duration: 0.25, ease: easeOut },
   },
 };
 
-// Container for staggering grid items (premium grid animation)
+// Container stagger for grids
 export const containerVariants: Variants = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.1,
+      staggerChildren: 0.06,
       delayChildren: 0,
     },
   },
 };
 
-// Tab underline animation (layoutId controlled)
+// Tabs: simple fade/slide
 export const tabVariants: Variants = {
-  hidden: { opacity: 0, x: -10 },
+  hidden: { opacity: 0, x: -6 },
   visible: {
     opacity: 1,
     x: 0,
-    transition: {
-      duration: 0.3,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
+    transition: { duration: 0.22, ease: easeOut },
   },
 };
 
-// Mobile menu overlay fade (premium modal)
+// Overlay fade + light blur
 export const overlayVariants: Variants = {
   hidden: { opacity: 0, backdropFilter: "blur(0px)" },
   visible: {
     opacity: 1,
-    backdropFilter: "blur(8px)",
-    transition: {
-      duration: 0.3,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
+    backdropFilter: "blur(6px)",
+    transition: { duration: 0.22, ease: easeOut },
   },
   exit: {
     opacity: 0,
     backdropFilter: "blur(0px)",
-    transition: {
-      duration: 0.2,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
+    transition: { duration: 0.18, ease: easeOut },
   },
 };
 
-// Mobile menu panel slide-in from right (luxury slide)
+// Menu panel slide-in (clean)
 export const menuVariants: Variants = {
-  hidden: {
-    x: "100%",
-    opacity: 0,
-  },
+  hidden: { x: "100%", opacity: 0 },
   visible: {
     x: 0,
     opacity: 1,
-    transition: {
-      duration: 0.4,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
+    transition: { duration: 0.28, ease: easeOut },
   },
   exit: {
     x: "100%",
     opacity: 0,
-    transition: {
-      duration: 0.3,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
+    transition: { duration: 0.22, ease: easeOut },
   },
 };
 
-// Gallery image crossfade (premium image transition)
+// Image transitions (subtle, no dramatic scale)
 export const imageVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.98 },
+  hidden: { opacity: 0, scale: 0.99 },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: {
-      duration: 0.5,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
+    transition: { duration: 0.35, ease: easeOut },
   },
   exit: {
     opacity: 0,
-    scale: 0.98,
-    transition: {
-      duration: 0.3,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
+    scale: 0.99,
+    transition: { duration: 0.22, ease: easeOut },
   },
 };
 
-// Hero text reveal (luxury title animation)
+// Hero text reveal: still subtle
 export const textRevealVariants: Variants = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 18 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.7,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
+    transition: { duration: 0.5, ease: easeOut },
   },
 };
 
-// Collection card reveal (premium showcase)
+// Collection reveal: subtle
 export const collectionVariants: Variants = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0, y: 18 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.6,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
+    transition: { duration: 0.45, ease: easeOut },
   },
 };
 
-// Badge/tag animation (subtle pop)
+// Badges: minimal pop (don’t distract)
 export const badgeVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.9 },
+  hidden: { opacity: 0, scale: 0.95 },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: {
-      duration: 0.4,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
+    transition: { duration: 0.22, ease: easeOut },
   },
   hover: {
-    scale: 1.05,
-    transition: {
-      duration: 0.3,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
+    scale: 1.02,
+    transition: { duration: 0.18, ease: easeOut },
   },
 };
 
-// Button animation (premium interaction)
+// Buttons: tiny lift only
 export const buttonVariants: Variants = {
   initial: { scale: 1, y: 0 },
   hover: {
-    scale: 1.02,
-    y: -2,
-    transition: {
-      duration: 0.3,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
+    scale: 1.01,
+    y: -1,
+    transition: { duration: 0.18, ease: easeOut },
   },
   tap: {
-    scale: 0.98,
+    scale: 0.99,
     y: 0,
-    transition: {
-      duration: 0.1,
-    },
+    transition: { duration: 0.1 },
   },
 };
 
@@ -223,25 +169,20 @@ export const marqueeAnimation = `
     0% { transform: translateX(0); }
     100% { transform: translateX(-100%); }
   }
-  
+
   @keyframes marquee-reverse {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(0); }
   }
 `;
 
-// Product count badge animation
 export const countVariants: Variants = {
-  initial: { opacity: 0, scale: 0.8 },
+  initial: { opacity: 0, scale: 0.95 },
   animate: {
     opacity: 1,
     scale: 1,
-    transition: {
-      duration: 0.3,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
+    transition: { duration: 0.2, ease: easeOut },
   },
 };
 
-// Ticker CSS class
 export const tickerClasses = "animate-marquee hover:[animation-play-state:paused]";

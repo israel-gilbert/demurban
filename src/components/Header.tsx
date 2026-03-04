@@ -18,9 +18,7 @@ const nav = [
 ];
 
 function getIsActive(pathname: string | null, href: string): boolean {
-  if (href === "/") {
-    return pathname === "/";
-  }
+  if (href === "/") return pathname === "/";
   return pathname?.startsWith(href) ?? false;
 }
 
@@ -29,7 +27,6 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
-  // Close menu on ESC
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") setMobileMenuOpen(false);
@@ -38,19 +35,18 @@ export default function Header() {
     return () => document.removeEventListener("keydown", handleEsc);
   }, [mobileMenuOpen]);
 
-  // Close menu on outside click
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) setMobileMenuOpen(false);
   };
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <header className="sticky top-0 z-50 border-b border-black/5 dark:border-white/10 bg-white/80 dark:bg-neutral-950/70 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6 lg:px-8">
           {/* Mobile menu button */}
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground md:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/10 transition md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -65,8 +61,9 @@ export default function Header() {
               width={40}
               height={40}
               className="h-10 w-10 object-contain"
+              priority
             />
-            <span className="hidden text-lg font-bold tracking-[0.2em] text-foreground sm:inline-block font-[var(--font-oswald)]">
+            <span className="hidden text-sm font-semibold tracking-[0.28em] text-neutral-900 dark:text-neutral-50 sm:inline-block font-[var(--font-oswald)]">
               DEMURBAN
             </span>
           </Link>
@@ -79,10 +76,10 @@ export default function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`text-sm font-medium uppercase tracking-wider transition-colors ${
-                    isActive 
-                      ? "text-accent" 
-                      : "text-muted-foreground hover:text-foreground"
+                  className={`text-xs font-medium uppercase tracking-[0.2em] transition ${
+                    isActive
+                      ? "text-neutral-900 dark:text-neutral-50"
+                      : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-50"
                   }`}
                 >
                   {item.label}
@@ -96,34 +93,37 @@ export default function Header() {
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/10 transition"
               aria-label="Search"
             >
               <Search className="h-5 w-5" />
             </button>
+
             <ThemeToggle />
+
             <Link
               href="/cart"
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border px-4 text-sm font-medium text-foreground hover:bg-muted"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-950 px-4 text-sm font-semibold text-neutral-900 dark:text-neutral-50 hover:opacity-90 transition"
             >
               <ShoppingBag className="h-4 w-4" />
               <span className="hidden sm:inline">Cart</span>
             </Link>
+
             <Link
               href="/checkout"
-              className="hidden h-10 items-center justify-center rounded-lg bg-accent px-5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 md:inline-flex"
+              className="hidden h-10 items-center justify-center rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-5 text-sm font-semibold hover:opacity-90 transition md:inline-flex"
             >
               Checkout
             </Link>
           </div>
         </div>
 
-        {/* Mobile Navigation with Animation */}
+        {/* Mobile Navigation */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <>
               <motion.div
-                className="fixed inset-0 z-40 md:hidden"
+                className="fixed inset-0 z-40 md:hidden bg-black/30 backdrop-blur-sm"
                 variants={overlayVariants}
                 initial="hidden"
                 animate="visible"
@@ -131,13 +131,13 @@ export default function Header() {
                 onClick={handleOverlayClick}
               />
               <motion.div
-                className="fixed right-0 top-16 z-40 w-64 border-l border-border bg-background md:hidden"
+                className="fixed right-0 top-16 z-40 w-72 border-l border-black/5 dark:border-white/10 bg-white dark:bg-neutral-950 md:hidden"
                 variants={menuVariants}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
               >
-                <nav className="flex flex-col px-4 py-4">
+                <nav className="flex flex-col px-5 py-5">
                   {nav.map((item) => {
                     const isActive = getIsActive(pathname, item.href);
                     return (
@@ -145,10 +145,10 @@ export default function Header() {
                         key={item.href}
                         href={item.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className={`py-3 text-sm font-medium uppercase tracking-wider transition-colors ${
-                          isActive 
-                            ? "text-accent" 
-                            : "text-muted-foreground hover:text-foreground"
+                        className={`py-3 text-xs font-medium uppercase tracking-[0.2em] transition ${
+                          isActive
+                            ? "text-neutral-900 dark:text-neutral-50"
+                            : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-50"
                         }`}
                       >
                         {item.label}
@@ -162,7 +162,6 @@ export default function Header() {
         </AnimatePresence>
       </header>
 
-      {/* Search Modal */}
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );

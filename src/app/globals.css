@@ -1,22 +1,10 @@
 @import "tailwindcss";
 
-/* Dark theme (default) */
-:root {
-  --background: #0A0A0A;
-  --foreground: #FAFAFA;
-  --muted: #1A1A1A;
-  --muted-foreground: #A1A1AA;
-  --border: #262626;
-  --accent: #C41E3A;
-  --accent-foreground: #FFFFFF;
-  --card: #111111;
-  --card-foreground: #FAFAFA;
-  --input: #1A1A1A;
-  --ring: #C41E3A;
-}
+/* Tailwind v4: make `dark:` use the `.dark` class (not OS preference) */
+@custom-variant dark (&:where(.dark, .dark *));
 
-/* Light theme */
-html.light {
+/* Light theme (default) */
+:root {
   --background: #FAFAFA;
   --foreground: #0A0A0A;
   --muted: #F5F5F5;
@@ -27,6 +15,21 @@ html.light {
   --card: #FFFFFF;
   --card-foreground: #0A0A0A;
   --input: #F5F5F5;
+  --ring: #C41E3A;
+}
+
+/* Dark theme (when html has class="dark") */
+html.dark {
+  --background: #0A0A0A;
+  --foreground: #FAFAFA;
+  --muted: #1A1A1A;
+  --muted-foreground: #A1A1AA;
+  --border: #262626;
+  --accent: #C41E3A;
+  --accent-foreground: #FFFFFF;
+  --card: #111111;
+  --card-foreground: #FAFAFA;
+  --input: #1A1A1A;
   --ring: #C41E3A;
 }
 
@@ -52,65 +55,37 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Custom scrollbar for dark theme */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--muted); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
 
-::-webkit-scrollbar-track {
-  background: var(--muted);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
-}
-
-/* Smooth transitions */
-* {
-  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
-/* Focus ring styling */
+/* Focus ring */
 :focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
 
-/* Selection styling */
+/* Selection */
 ::selection {
   background: var(--accent);
   color: var(--accent-foreground);
 }
 
-/* Marquee animation for announcement ticker */
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-100%); }
-}
-
-@keyframes marquee-reverse {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(0); }
-}
+/* Marquee */
+@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+@keyframes marquee-reverse { 0% { transform: translateX(-100%); } 100% { transform: translateX(0); } }
 
 @layer utilities {
-  .animate-marquee {
-    animation: marquee 20s linear infinite;
-  }
-  
-  .animate-marquee-reverse {
-    animation: marquee-reverse 20s linear infinite;
-  }
-  
-  .hover\:animation-pause:hover {
-    animation-play-state: paused;
-  }
+  .animate-marquee { animation: marquee 20s linear infinite; }
+  .animate-marquee-reverse { animation: marquee-reverse 20s linear infinite; }
+  .hover\:animation-pause:hover { animation-play-state: paused; }
+}
+@layer utilities {
+  .bg-bg { background-color: var(--background); }
+  .bg-card { background-color: var(--card); }
+  .text-fg { color: var(--foreground); }
+  .text-muted { color: var(--muted-foreground); }
+  .border-border { border-color: var(--border); }
 }
