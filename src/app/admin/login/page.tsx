@@ -77,10 +77,6 @@ export default function AdminLoginPage() {
           {loading ? "Signing in..." : "Sign in"}
         </button>
       </form>
-
-      <div className="mt-6 text-xs text-muted-foreground">
-        Tip: set <code className="rounded bg-muted px-1">ADMIN_EMAIL</code> and <code className="rounded bg-muted px-1">ADMIN_PASSWORD</code> then run <code className="rounded bg-muted px-1">npm run db:seed</code>.
-      </div>
     </div>
   );
 }
