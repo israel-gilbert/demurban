@@ -57,15 +57,12 @@ export default function Header() {
           <Link href="/" className="flex items-center gap-3">
             <Image
               src="/images/logo.png"
-              alt="DEMURBAN"
-              width={40}
-              height={40}
-              className="h-10 w-10 object-contain"
+              width={567}
+              height={694}
+              alt="demurban"
+className="h-28 md:h-32 w-auto object-contain"
               priority
             />
-            <span className="hidden text-sm font-semibold tracking-[0.28em] text-neutral-900 dark:text-neutral-50 sm:inline-block font-[var(--font-oswald)]">
-              DEMURBAN
-            </span>
           </Link>
 
           {/* Desktop Navigation */}

@@ -34,13 +34,10 @@ export default function Footer() {
               <Image
                 src="/images/logo.png"
                 alt="DEMURBAN"
-                width={48}
-                height={48}
-                className="h-12 w-12 object-contain"
+                width={567}
+                height={694}
+className="h-28 md:h-32 w-auto object-contain"
               />
-              <span className="text-xl font-bold tracking-[0.15em] text-foreground font-[var(--font-oswald)]">
-                DEMURBAN
-              </span>
             </div>
             <p className="text-sm leading-relaxed text-muted-foreground mb-6">
               Where taste meets identity.
