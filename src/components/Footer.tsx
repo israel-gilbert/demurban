@@ -46,7 +46,7 @@ className="h-28 md:h-32 w-auto object-contain"
             </p>
             <div className="flex gap-3">
               <a
-                href="https://instagram.com"
+                href="https://instagram.com/dem.urban"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border text-muted-foreground hover:border-accent hover:text-accent hover:bg-accent/5 transition-all"
