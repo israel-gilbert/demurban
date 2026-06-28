@@ -3,7 +3,11 @@ import { Resend } from "resend";
 import { PrismaClient } from "@prisma/client";
 
 function getResend() {
-  return new Resend(process.env.RESEND_API_KEY);
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error("RESEND_API_KEY environment variable is not set");
+  }
+  return new Resend(apiKey);
 }
 
 const prisma = new PrismaClient();
@@ -28,6 +32,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!process.env.RESEND_API_KEY) {
+      console.error("RESEND_API_KEY is not configured");
+      return NextResponse.json(
+        { error: "Email service is not configured. Please try again later." },
+        { status: 503 }
+      );
+    }
+
     // Check if subscriber already exists
     const existing = await prisma.subscriber.findUnique({
       where: { email },
@@ -42,7 +54,7 @@ export async function POST(req: NextRequest) {
 
         // Send welcome email to subscriber
         const { error } = await getResend().emails.send({
-          from: `DEM Urban <onboarding@resend.dev>`,
+          from: `DEM Urban <onboarding@demurban.com>`,
           to: email,
           subject: "Welcome to the DEM Insider 🔥",
           html: `

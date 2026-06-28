@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 
 function getResend() {
-  return new Resend(process.env.RESEND_API_KEY);
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error("RESEND_API_KEY environment variable is not set");
+  }
+  return new Resend(apiKey);
 }
 
 export async function POST(req: NextRequest) {
@@ -25,8 +29,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!process.env.RESEND_API_KEY) {
+      console.error("RESEND_API_KEY is not configured");
+      return NextResponse.json(
+        { error: "Email service is not configured. Please contact us directly." },
+        { status: 503 }
+      );
+    }
+
     const { data, error } = await getResend().emails.send({
-      from: `DEM Urban <onboarding@demurban.com>`,
+      from: `DEM Urban <contact@demurban.com>`,
       to: process.env.CONTACT_EMAIL || "hello@demurban.com",
       replyTo: email,
       subject: `[Contact Form] ${subject}`,
