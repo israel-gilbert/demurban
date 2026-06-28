@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { PrismaClient } from "@prisma/client";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
+
 const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
@@ -38,7 +41,7 @@ export async function POST(req: NextRequest) {
         });
 
         // Send welcome email to subscriber
-        const { error } = await resend.emails.send({
+        const { error } = await getResend().emails.send({
           from: `DEM Urban <onboarding@resend.dev>`,
           to: email,
           subject: "Welcome to the DEM Insider 🔥",
@@ -98,7 +101,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Send welcome email to new subscriber
-    const { error } = await resend.emails.send({
+    const { error } = await getResend().emails.send({
       from: `DEM Urban <onboarding@resend.dev>`,
       to: email,
       subject: "Welcome to the DEM Insider 🔥",
