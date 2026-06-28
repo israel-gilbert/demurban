@@ -24,6 +24,16 @@ interface PaymentEvent {
   createdAt: string;
 }
 
+type ShippingAddress = {
+  fullName: string;
+  address1: string;
+  address2?: string;
+  city: string;
+  state: string;
+  country: string;
+  postalCode?: string;
+};
+
 interface Order {
   id: string;
   orderNumber: string;
@@ -34,7 +44,7 @@ interface Order {
   total: number;
   customerEmail: string;
   customerPhone: string | null;
-  shippingAddress: unknown;
+  shippingAddress: ShippingAddress | null;
   paidAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -79,16 +89,6 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.R
     icon: <CheckCircle className="h-5 w-5" />,
     bgColor: "bg-purple-50 border-purple-200",
   },
-};
-
-type ShippingAddress = {
-  fullName: string;
-  address1: string;
-  address2?: string;
-  city: string;
-  state: string;
-  country: string;
-  postalCode?: string;
 };
 
 function formatPrice(amount: number, currency: string = "NGN") {

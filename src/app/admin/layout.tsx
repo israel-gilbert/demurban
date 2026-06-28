@@ -114,6 +114,17 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
           </nav>
 
           <div className="p-4 border-t border-neutral-800">
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              View Site
+            </a>
             <div className="flex items-center gap-3 px-4 py-3">
               <div className="w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center">
                 <span className="text-sm text-white">
