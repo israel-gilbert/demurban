@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Mail, Instagram, MapPin } from "lucide-react";
+import { Mail, Instagram, MapPin, Send, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function ContactPage() {
   const [formState, setFormState] = useState({ name: "", email: "", subject: "", message: "" });
-  const [submitted, setSubmitted] = useState(false);
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -18,12 +19,32 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Connect to an email service (Resend, SendGrid, etc.)
-    setSubmitted(true);
-    timeoutRef.current = setTimeout(() => {
+    setStatus("loading");
+    setErrorMessage("");
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formState),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send message");
+      }
+
+      setStatus("success");
       setFormState({ name: "", email: "", subject: "", message: "" });
-      setSubmitted(false);
-    }, 3000);
+
+      timeoutRef.current = setTimeout(() => {
+        setStatus("idle");
+      }, 5000);
+    } catch (err) {
+      setStatus("error");
+      setErrorMessage(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    }
   };
 
   return (
@@ -88,12 +109,36 @@ export default function ContactPage() {
             />
           </label>
 
+          {status === "success" && (
+            <div className="flex items-center gap-2 rounded-lg bg-green-500/10 border border-green-500/30 px-4 py-3 text-sm text-green-600">
+              <CheckCircle className="h-4 w-4 shrink-0" />
+              Message sent successfully! We'll get back to you soon.
+            </div>
+          )}
+
+          {status === "error" && (
+            <div className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-600">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {errorMessage}
+            </div>
+          )}
+
           <button
             type="submit"
-            disabled={submitted}
-            className="h-11 w-full rounded-lg bg-accent px-5 text-sm font-bold text-background hover:bg-accent/90 disabled:opacity-50 transition-colors"
+            disabled={status === "loading"}
+            className="h-11 w-full rounded-lg bg-accent px-5 text-sm font-bold text-background hover:bg-accent/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
           >
-            {submitted ? "Message sent! ✓" : "Send Message"}
+            {status === "loading" ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                Sending...
+              </>
+            ) : (
+              <>
+                <Send className="h-4 w-4" />
+                Send Message
+              </>
+            )}
           </button>
         </form>
 

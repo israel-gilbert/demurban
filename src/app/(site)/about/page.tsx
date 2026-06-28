@@ -15,11 +15,11 @@ export default function AboutPage() {
             DEM Urban is a unisex streetwear brand born from the streets of Lagos. We create bold, unapologetic pieces for those who refuse to blend in. Every design tells a story—of culture, resilience, and self-expression.
           </p>
         </div>
-        <div className="aspect-video rounded-2xl border border-border bg-muted overflow-hidden">
+        <div className="aspect-video rounded-2xl border border-border bg-muted overflow-hidden flex items-center justify-center p-8">
           <img
             src="/images/logo.png"
             alt="DEM Urban Store"
-            className="h-full w-full object-cover"
+            className="h-full w-auto object-contain"
           />
         </div>
       </div>

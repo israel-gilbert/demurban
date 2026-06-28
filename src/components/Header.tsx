@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Search, ShoppingBag, Menu, X } from "lucide-react";
@@ -13,6 +12,7 @@ import { overlayVariants, menuVariants } from "@/lib/motion";
 const nav = [
   { label: "Home", href: "/" },
   { label: "Shop", href: "/shop" },
+  { label: "Track Order", href: "/order/track" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];
@@ -42,31 +42,32 @@ export default function Header() {
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-black/5 dark:border-white/10 bg-white/80 dark:bg-neutral-950/70 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6 lg:px-8">
-          {/* Mobile menu button */}
-          <button
-            type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/10 transition md:hidden"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+        <div className="mx-auto flex h-20 md:h-24 max-w-7xl items-center justify-between px-4 md:px-6 lg:px-8 relative">
+          
+          {/* LEFT BLOCK: Hamburger on mobile / Logo on desktop */}
+          <div className="flex flex-1 items-center justify-start">
+            {/* Mobile Hamburger */}
+            <button
+              type="button"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/10 transition md:hidden"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5 stroke-[2.5]" /> : <Menu className="h-5 w-5 stroke-[2.5]" />}
+            </button>
 
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-3">
-            <Image
-              src="/images/logo.png"
-              width={567}
-              height={694}
-              alt="demurban"
-className="h-28 md:h-32 w-auto object-contain"
-              priority
-            />
-          </Link>
+            {/* Desktop Logo Layout */}
+            <Link href="/" className="hidden md:flex items-center">
+              <img
+                src="/images/logo.png"
+                alt="demurban"
+                className="h-12 w-auto object-contain brightness-100 dark:brightness-110 antialiased"
+              />
+            </Link>
+          </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden items-center gap-8 md:flex">
+          {/* CENTER BLOCK (Desktop Only): Navigation Links */}
+          <nav className="hidden items-center justify-center gap-8 md:flex absolute left-1/2 -translate-x-1/2">
             {nav.map((item) => {
               const isActive = getIsActive(pathname, item.href);
               return (
@@ -85,25 +86,36 @@ className="h-28 md:h-32 w-auto object-contain"
             })}
           </nav>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2">
+          {/* CENTER BLOCK (Mobile Only): Brand Logo centered cleanly */}
+          <div className="flex md:hidden flex-initial items-center justify-center">
+            <Link href="/" className="flex items-center">
+              <img
+                src="/images/logo.png"
+                alt="demurban"
+                className="h-10 w-auto object-contain brightness-100 dark:brightness-110 antialiased"
+              />
+            </Link>
+          </div>
+
+          {/* RIGHT BLOCK: Actions Grouped To The Far Right */}
+          <div className="flex flex-1 items-center justify-end gap-2 md:gap-4">
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
               className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/10 transition"
               aria-label="Search"
             >
-              <Search className="h-5 w-5" />
+              <Search className="h-5 w-5 stroke-[2.5]" />
             </button>
 
             <ThemeToggle />
 
             <Link
               href="/cart"
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-950 px-4 text-sm font-semibold text-neutral-900 dark:text-neutral-50 hover:opacity-90 transition"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/10 transition relative"
+              aria-label="Cart"
             >
-              <ShoppingBag className="h-4 w-4" />
-              <span className="hidden sm:inline">Cart</span>
+              <ShoppingBag className="h-5 w-5 stroke-[2.5]" />
             </Link>
 
             <Link
@@ -115,7 +127,7 @@ className="h-28 md:h-32 w-auto object-contain"
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation Side Drawer */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <>
@@ -134,7 +146,7 @@ className="h-28 md:h-32 w-auto object-contain"
                 animate="visible"
                 exit="exit"
               >
-                <nav className="flex flex-col px-5 py-5">
+                <nav className="flex flex-col items-end gap-1 px-5 py-5">
                   {nav.map((item) => {
                     const isActive = getIsActive(pathname, item.href);
                     return (
@@ -142,7 +154,7 @@ className="h-28 md:h-32 w-auto object-contain"
                         key={item.href}
                         href={item.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className={`py-3 text-xs font-medium uppercase tracking-[0.2em] transition ${
+                        className={`w-full text-right py-3 text-xs font-medium uppercase tracking-[0.2em] transition ${
                           isActive
                             ? "text-neutral-900 dark:text-neutral-50"
                             : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-50"

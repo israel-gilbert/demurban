@@ -1,62 +1,78 @@
-import { NextResponse } from "next/server";
-import { z } from "zod";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin";
 
-const ProductInput = z.object({
-  title: z.string().min(2).max(120),
-  slug: z
-    .string()
-    .min(2)
-    .max(140)
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must be lowercase and hyphen-separated"),
-  description: z.string().max(2000).optional().nullable(),
-  collection: z.enum(["LATEST_DROP","ARCHIVE"]).default("LATEST_DROP"),
-  price_kobo: z.number().int().positive(),
-  compare_at_kobo: z.number().int().positive().optional().nullable(),
-  inventory_qty: z.number().int().min(0).optional(),
-  active: z.boolean().optional(),
-  tags: z.array(z.string().min(1).max(30)).optional(),
-  images: z.array(z.string().url()).min(1),
-});
-
 export async function GET() {
   const session = await requireAdmin();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const products = await prisma.product.findMany({
-    orderBy: { updated_at: "desc" },
-  });
-
-  return NextResponse.json({ products });
-}
-
-export async function POST(req: Request) {
-  const session = await requireAdmin();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const body = await req.json().catch(() => null);
-  const parsed = ProductInput.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid input", issues: parsed.error.issues }, { status: 400 });
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const data = parsed.data;
+  try {
+    const products = await prisma.product.findMany({
+      orderBy: { created_at: "desc" },
+    });
+    return NextResponse.json(products);
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch products" },
+      { status: 500 }
+    );
+  }
+}
 
-  const product = await prisma.product.create({
-    data: {
-      title: data.title,
-      slug: data.slug,
-      description: data.description ?? undefined,
-      collection: data.collection,
-      price_kobo: data.price_kobo,
-      compare_at_kobo: data.compare_at_kobo ?? undefined,
-      inventory_qty: data.inventory_qty ?? 0,
-      active: data.active ?? true,
-      tags: data.tags ?? [],
-      images: data.images,
-    },
-  });
+export async function POST(req: NextRequest) {
+  const session = await requireAdmin();
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-  return NextResponse.json({ product }, { status: 201 });
+  try {
+    const body = await req.json();
+    const {
+      title,
+      slug,
+      description,
+      collection,
+      price_kobo,
+      compare_at_kobo,
+      currency,
+      inventory_qty,
+      active,
+      tags,
+      images,
+    } = body;
+
+    if (!title || !slug || price_kobo === undefined) {
+      return NextResponse.json(
+        { error: "Title, slug, and price are required" },
+        { status: 400 }
+      );
+    }
+
+    const product = await prisma.product.create({
+      data: {
+        title,
+        slug,
+        description,
+        collection: collection || "LATEST_DROP",
+        price_kobo: Number(price_kobo),
+        compare_at_kobo: compare_at_kobo ? Number(compare_at_kobo) : null,
+        currency: currency || "NGN",
+        inventory_qty: Number(inventory_qty) || 0,
+        active: active !== undefined ? active : true,
+        tags: tags || [],
+        images: images || [],
+      },
+    });
+
+    return NextResponse.json(product, { status: 201 });
+  } catch (error) {
+    console.error("Error creating product:", error);
+    return NextResponse.json(
+      { error: "Failed to create product" },
+      { status: 500 }
+    );
+  }
 }

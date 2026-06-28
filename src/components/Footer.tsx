@@ -33,10 +33,10 @@ export default function Footer() {
             <div className="flex items-center gap-3 mb-4">
               <Image
                 src="/images/logo.png"
-                alt="DEMURBAN"
-                width={567}
-                height={694}
-className="h-28 md:h-32 w-auto object-contain"
+                alt="demurban"
+                width={200}
+                height={47}
+                className="h-12 w-auto object-contain brightness-100 dark:brightness-110 antialiased"
               />
             </div>
             <p className="text-sm leading-relaxed text-muted-foreground mb-6">
@@ -114,38 +114,44 @@ className="h-28 md:h-32 w-auto object-contain"
             </nav>
           </div>
 
-          {/* Support Links */}
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-4">
-              Support
-            </p>
-            <nav className="flex flex-col gap-3">
-              <Link
-                href="/policies/shipping"
-                className="text-sm text-muted-foreground hover:text-accent transition-colors"
-              >
-                Shipping Info
-              </Link>
-              <Link
-                href="/policies/returns"
-                className="text-sm text-muted-foreground hover:text-accent transition-colors"
-              >
-                Returns & Exchanges
-              </Link>
-              <Link
-                href="/policies/privacy"
-                className="text-sm text-muted-foreground hover:text-accent transition-colors"
-              >
-                Privacy Policy
-              </Link>
-              <Link
-                href="/policies/terms"
-                className="text-sm text-muted-foreground hover:text-accent transition-colors"
-              >
-                Terms & Conditions
-              </Link>
-            </nav>
-          </div>
+           {/* Support Links */}
+           <div>
+             <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-4">
+               Support
+             </p>
+             <nav className="flex flex-col gap-3">
+               <Link
+                 href="/order/track"
+                 className="text-sm text-muted-foreground hover:text-accent transition-colors"
+               >
+                 Track Order
+               </Link>
+               <Link
+                 href="/policies/shipping"
+                 className="text-sm text-muted-foreground hover:text-accent transition-colors"
+               >
+                 Shipping Info
+               </Link>
+               <Link
+                 href="/policies/returns"
+                 className="text-sm text-muted-foreground hover:text-accent transition-colors"
+               >
+                 Returns & Exchanges
+               </Link>
+               <Link
+                 href="/policies/privacy"
+                 className="text-sm text-muted-foreground hover:text-accent transition-colors"
+               >
+                 Privacy Policy
+               </Link>
+               <Link
+                 href="/policies/terms"
+                 className="text-sm text-muted-foreground hover:text-accent transition-colors"
+               >
+                 Terms & Conditions
+               </Link>
+             </nav>
+           </div>
         </div>
 
         {/* Bottom Bar */}
