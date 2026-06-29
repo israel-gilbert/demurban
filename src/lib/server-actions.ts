@@ -132,6 +132,7 @@ export async function fetchProductsByCollection(collection: string): Promise<Pro
 export async function fetchProductBySlug(slug: string): Promise<Product | null> {
   const product = await prisma.product.findFirst({
     where: { slug, active: true },
+    include: { variants: true },
   });
   return (product as unknown as Product) ?? null;
 }

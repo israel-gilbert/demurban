@@ -36,6 +36,10 @@ export function getCart(): CartState {
 
 export function saveCart(cart: CartState) {
   window.localStorage.setItem(KEY, JSON.stringify(cart));
+  // Dispatch custom event for same-tab cart count updates
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("cartUpdated"));
+  }
 }
 
 export function addToCart(line: Omit<CartLine, "quantity"> & { quantity?: number }): CartState {

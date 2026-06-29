@@ -15,6 +15,9 @@ export async function GET(
     const { id } = await params;
     const product = await prisma.product.findUnique({
       where: { id },
+      include: {
+        variants: true,
+      },
     });
 
     if (!product) {
@@ -55,8 +58,10 @@ export async function PUT(
       active,
       tags,
       images,
+      variants,
     } = body;
 
+    // Update product
     const product = await prisma.product.update({
       where: { id },
       data: {
@@ -78,7 +83,34 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json(product);
+    // Update variants if provided
+    if (variants && Array.isArray(variants)) {
+      // Delete existing variants
+      await prisma.productVariant.deleteMany({
+        where: { product_id: id },
+      });
+
+      // Create new variants
+      if (variants.length > 0) {
+        await prisma.productVariant.createMany({
+          data: variants.map((v: any) => ({
+            product_id: id,
+            size: v.size,
+            inventory_qty: Number(v.inventory_qty) || 0,
+            price_kobo: v.price_kobo ? Number(v.price_kobo) : null,
+            active: v.active !== undefined ? v.active : true,
+          })),
+        });
+      }
+    }
+
+    // Return updated product with variants
+    const updatedProduct = await prisma.product.findUnique({
+      where: { id },
+      include: { variants: true },
+    });
+
+    return NextResponse.json(updatedProduct);
   } catch (error) {
     console.error("Error updating product:", error);
     return NextResponse.json(

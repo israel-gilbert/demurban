@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import SearchModal from "./SearchModal";
 import ThemeToggle from "./ThemeToggle";
 import { overlayVariants, menuVariants } from "@/lib/motion";
+import { getCart } from "@/lib/cart";
 
 const nav = [
   { label: "Home", href: "/" },
@@ -26,14 +27,29 @@ export default function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
 
+  // Update cart count on mount and when storage changes
   useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMobileMenuOpen(false);
+    const updateCartCount = () => {
+      const cart = getCart();
+      const count = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+      setCartCount(count);
     };
-    if (mobileMenuOpen) document.addEventListener("keydown", handleEsc);
-    return () => document.removeEventListener("keydown", handleEsc);
-  }, [mobileMenuOpen]);
+
+    updateCartCount();
+
+    // Listen for storage changes (cart updates from other tabs/windows)
+    window.addEventListener("storage", updateCartCount);
+
+    // Custom event for cart updates within the same tab
+    window.addEventListener("cartUpdated", updateCartCount);
+
+    return () => {
+      window.removeEventListener("storage", updateCartCount);
+      window.removeEventListener("cartUpdated", updateCartCount);
+    };
+  }, []);
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) setMobileMenuOpen(false);
@@ -116,6 +132,11 @@ export default function Header() {
               aria-label="Cart"
             >
               <ShoppingBag className="h-5 w-5 stroke-[2.5]" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              )}
             </Link>
 
             <Link

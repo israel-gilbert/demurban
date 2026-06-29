@@ -12,13 +12,14 @@ enum ProductCollection {
   ARCHIVE
 }
 
-
 enum OrderStatus {
   PENDING
   PAID
+  PROCESSING
+  IN_TRANSIT
+  DELIVERED
   FAILED
   CANCELLED
-  FULFILLED
   REFUNDED
 }
 
@@ -35,10 +36,30 @@ model Product {
   active             Boolean         @default(true)
   tags               String[]
   images             String[]
+  
+  // Product variations (sizes)
+  variants           ProductVariant[]
+  
   created_at         DateTime        @default(now())
   updated_at         DateTime        @updatedAt
 
   order_items        OrderItem[]
+}
+
+model ProductVariant {
+  id              String   @id @default(cuid())
+  product_id      String
+  size            String   // e.g., "S", "M", "L", "XL", "XXL"
+  inventory_qty   Int      @default(0)
+  price_kobo      Int?     // Optional: override product price for this size
+  active          Boolean  @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  product         Product  @relation(fields: [product_id], references: [id])
+  order_items     OrderItem[]
+
+  @@index([product_id])
 }
 
 model Order {
@@ -57,6 +78,12 @@ model Order {
   paystack_reference      String        @unique
   paystack_transaction_id String?
   paid_at                 DateTime?
+  
+  // Delivery tracking
+  tracking_number         String?
+  delivery_notes          String?
+  shipped_at              DateTime?
+  delivered_at            DateTime?
 
   created_at              DateTime      @default(now())
   updated_at              DateTime      @updatedAt
@@ -73,7 +100,9 @@ model OrderItem {
   id              String   @id @default(cuid())
   order_id        String
   product_id      String
+  variant_id      String?
   title_snapshot  String
+  size_snapshot   String?  // Store the size at time of order
   unit_price_kobo Int
   quantity        Int
   variant_json    Json?
@@ -81,6 +110,7 @@ model OrderItem {
 
   order           Order    @relation(fields: [order_id], references: [id])
   product         Product  @relation(fields: [product_id], references: [id])
+  variant         ProductVariant? @relation(fields: [variant_id], references: [id])
 
   @@index([order_id])
   @@index([product_id])
