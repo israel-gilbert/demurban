@@ -1,141 +1,251 @@
-import crypto from "crypto";
-import { NextResponse, NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { logSecurityEvent } from "@/lib/security";
+import { sendOrderConfirmationEmail } from "@/lib/email";
+import crypto from "crypto";
 
 /**
- * Webhook handler with signature verification and idempotency
- * Rate limiting is handled by Paystack (they have reasonable retry logic)
+ * Paystack Webhook Handler
+ * 
+ * This is the PRIMARY payment processing endpoint.
+ * Webhooks are more reliable than callbacks because:
+ * 1. They work even if the user closes their browser
+ * 2. They are server-to-server, reducing tampering risk
+ * 3. Paystack retries failed webhook deliveries
+ * 
+ * CRITICAL: Always verify the webhook signature to ensure it's from Paystack
  */
+
+export const dynamic = "force-dynamic";
+
+function verifyWebhookSignature(payload: string, signature: string | null): boolean {
+  if (!signature) return false;
+  
+  const secret = process.env.PAYSTACK_SECRET_KEY;
+  if (!secret) return false;
+
+  const hash = crypto
+    .createHmac("sha512", secret)
+    .update(payload, "utf8")
+    .digest("hex");
+
+  return hash === signature;
+}
+
 export async function POST(request: NextRequest) {
-  const secretKey = process.env.PAYSTACK_SECRET_KEY;
-  if (!secretKey) {
-    logSecurityEvent("missing_webhook_secret");
-    return NextResponse.json({ ok: false }, { status: 500 });
-  }
-
-  // Paystack signs the raw request body with HMAC SHA512
-  const body = await request.text();
-  const signature = request.headers.get("x-paystack-signature") ?? "";
-
-  // Verify signature
-  const hash = crypto.createHmac("sha512", secretKey).update(body).digest("hex");
-  if (!signature || hash !== signature) {
-    logSecurityEvent("webhook_signature_invalid", {
-      provided: signature.substring(0, 20) + "***",
-      clientIp: request.headers.get("x-forwarded-for") || "unknown",
+  const clientIp = request.headers.get("x-forwarded-for") || "unknown";
+  
+  const signature = request.headers.get("x-paystack-signature");
+  const rawBody = await request.text();
+  
+  // Verify webhook signature
+  if (!verifyWebhookSignature(rawBody, signature)) {
+    logSecurityEvent("webhook_invalid_signature", {
+      signature: signature ? "present" : "missing",
+      ip: clientIp,
     });
-    return NextResponse.json({ ok: false }, { status: 401 });
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
-  let event;
+  let body: { event: string; data: any };
   try {
-    event = JSON.parse(body);
-  } catch (e) {
-    logSecurityEvent("webhook_parse_error");
-    return NextResponse.json({ ok: false }, { status: 400 });
+    body = JSON.parse(rawBody);
+  } catch {
+    logSecurityEvent("webhook_invalid_json", { ip: clientIp });
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const eventType = event?.event;
-  const data = event?.data;
-  const reference: string | undefined = data?.reference;
+  const { event, data } = body;
 
-  // Accept webhook gracefully even if reference is missing (Paystack requirement)
-  if (!reference) {
-    logSecurityEvent("webhook_no_reference", { eventType });
-    return NextResponse.json({ ok: true });
-  }
+  logSecurityEvent("webhook_received", {
+    event,
+    reference: data?.reference,
+    ip: clientIp,
+  });
 
   try {
-    // Find order by reference
-    const order = await prisma.order.findUnique({
-      where: { paystack_reference: reference },
-    });
-
-    if (!order) {
-      logSecurityEvent("webhook_order_not_found", { reference });
-      // Accept the webhook but don't process (idempotency)
-      return NextResponse.json({ ok: true });
+    if (event === "charge.success" || event === "successful") {
+      await handleSuccessfulPayment(data);
+    } else if (event === "charge.failed" || event === "failed") {
+      await handleFailedPayment(data);
+    } else {
+      logSecurityEvent("webhook_unhandled_event", { event, reference: data?.reference });
     }
 
-    // Create payment event record first (audit trail)
-    await prisma.paymentEvent.create({
-      data: {
-        order_id: order.id,
-        reference,
-        event_type: `PAYSTACK_WEBHOOK_${String(eventType ?? "UNKNOWN")}`,
-        payload_json: {
-          ...event,
-          _metadata: {
-            timestamp: new Date().toISOString(),
-            ip: request.headers.get("x-forwarded-for") || "unknown",
+    return NextResponse.json({ received: true });
+  } catch (error) {
+    logSecurityEvent("webhook_processing_error", {
+      event,
+      reference: data?.reference,
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+    
+    return NextResponse.json({ received: true });
+  }
+}
+
+async function handleSuccessfulPayment(data: any) {
+  const reference = data?.reference;
+  if (!reference) {
+    logSecurityEvent("webhook_missing_reference", { event: "charge.success" });
+    return;
+  }
+
+  // Find the order by Paystack reference
+  const order = await prisma.order.findUnique({
+    where: { paystack_reference: reference },
+    include: {
+      items: {
+        include: {
+          product: {
+            select: { title: true, slug: true, images: true },
           },
         },
       },
-    });
+    },
+  });
 
-    // Handle successful payment events with strict validation
-    const success = eventType === "charge.success" || eventType === "transaction.success";
-    const amountOk = Number(data?.amount) === order.total_kobo;
-    const currencyOk = (data?.currency ?? "NGN") === order.currency;
-    const statusOk = data?.status === "success";
-
-    if (success && amountOk && currencyOk && statusOk) {
-      // Idempotency: only update if still PENDING (prevent double-marking)
-      const updated = await prisma.order.update({
-        where: { id: order.id, status: "PENDING" }, // Atomic check
-        data: {
-          status: "PAID",
-          paystack_transaction_id: String(data?.id ?? ""),
-          paid_at: new Date(),
-        },
-      });
-
-      logSecurityEvent("order_marked_paid_via_webhook", {
-        orderId: order.id,
-        reference,
-        amount: order.total_kobo,
-      });
-
-      return NextResponse.json({ ok: true });
-    } else if (success) {
-      // Payment claims to be successful but amount/currency mismatch
-      logSecurityEvent("webhook_validation_failed", {
-        orderId: order.id,
-        reference,
-        amountOk,
-        currencyOk,
-        statusOk,
-        expectedAmount: order.total_kobo,
-        providedAmount: data?.amount,
-      });
-
-      // Don't update order status - log for manual review
-      return NextResponse.json({ ok: true });
-    } else {
-      // Payment failed event
-      logSecurityEvent("payment_failed_webhook", {
-        orderId: order.id,
-        reference,
-        eventType,
-      });
-    }
-
-    return NextResponse.json({ ok: true });
-  } catch (err: any) {
-    // Check if it's a unique constraint violation (already marked paid)
-    if (err?.code === "P2025") {
-      // Record not found with the status filter - order already PAID
-      logSecurityEvent("webhook_idempotency_duplicate", { reference });
-      return NextResponse.json({ ok: true });
-    }
-
-    logSecurityEvent("webhook_processing_error", {
-      error: err?.message,
-      reference,
-    });
-
-    // Always return 200 to acknowledge receipt (Paystack requirement)
-    return NextResponse.json({ ok: true });
+  if (!order) {
+    logSecurityEvent("webhook_order_not_found", { reference });
+    return;
   }
+
+  // Only update if still PENDING (idempotency)
+  if (order.status !== "PENDING") {
+    logSecurityEvent("webhook_order_already_processed", {
+      orderId: order.id,
+      reference,
+      currentStatus: order.status,
+    });
+    return;
+  }
+
+  // Validate amount and currency
+  const amountOk = Number(data?.amount) === order.total_kobo;
+  const currencyOk = (data?.currency ?? "NGN") === order.currency;
+
+  if (!amountOk || !currencyOk) {
+    logSecurityEvent("webhook_amount_mismatch", {
+      orderId: order.id,
+      reference,
+      expectedAmount: order.total_kobo,
+      receivedAmount: data?.amount,
+      expectedCurrency: order.currency,
+      receivedCurrency: data?.currency,
+    });
+    return;
+  }
+
+  // ATOMIC UPDATE: Only update if still PENDING
+  const updated = await prisma.order.updateMany({
+    where: { id: order.id, status: "PENDING" },
+    data: {
+      status: "PAID",
+      paystack_transaction_id: String(data?.id ?? ""),
+      paid_at: new Date(),
+    },
+  });
+
+  if (updated.count === 0) {
+    logSecurityEvent("webhook_race_condition_prevented", { orderId: order.id, reference });
+    return;
+  }
+
+  // Record payment event
+  await prisma.paymentEvent.create({
+    data: {
+      order_id: order.id,
+      reference,
+      event_type: "PAYSTACK_WEBHOOK_SUCCESS",
+      payload_json: data,
+    },
+  });
+
+  logSecurityEvent("order_marked_paid_via_webhook", {
+    orderId: order.id,
+    reference,
+    amount: order.total_kobo,
+  });
+
+  // Send confirmation email
+  try {
+    const shippingAddress = order.shipping_address_json as any;
+    await sendOrderConfirmationEmail({
+      orderNumber: order.order_number,
+      customerEmail: order.customer_email,
+      customerName: shippingAddress?.fullName || "Customer",
+      items: order.items.map((item) => ({
+        title: item.title_snapshot,
+        quantity: item.quantity,
+        unitPrice: item.unit_price_kobo,
+        lineTotal: item.line_total_kobo,
+      })),
+      subtotal: order.subtotal_kobo,
+      shipping: order.shipping_kobo,
+      total: order.total_kobo,
+      currency: order.currency,
+      shippingAddress: {
+        fullName: shippingAddress?.fullName || "",
+        address1: shippingAddress?.address1 || "",
+        address2: shippingAddress?.address2,
+        city: shippingAddress?.city || "",
+        state: shippingAddress?.state || "",
+        country: shippingAddress?.country || "",
+        postalCode: shippingAddress?.postalCode,
+      },
+    });
+    logSecurityEvent("webhook_email_sent", { orderId: order.id });
+  } catch (emailError) {
+    logSecurityEvent("webhook_email_failed", {
+      orderId: order.id,
+      error: emailError instanceof Error ? emailError.message : "Unknown",
+    });
+  }
+}
+
+async function handleFailedPayment(data: any) {
+  const reference = data?.reference;
+  if (!reference) {
+    logSecurityEvent("webhook_missing_reference", { event: "charge.failed" });
+    return;
+  }
+
+  const order = await prisma.order.findUnique({
+    where: { paystack_reference: reference },
+  });
+
+  if (!order) {
+    logSecurityEvent("webhook_order_not_found", { reference });
+    return;
+  }
+
+  if (order.status !== "PENDING") {
+    logSecurityEvent("webhook_order_already_processed", {
+      orderId: order.id,
+      reference,
+      currentStatus: order.status,
+    });
+    return;
+  }
+
+  const updated = await prisma.order.updateMany({
+    where: { id: order.id, status: "PENDING" },
+    data: { status: "FAILED" },
+  });
+
+  if (updated.count === 0) {
+    logSecurityEvent("webhook_failed_race_condition", { orderId: order.id, reference });
+    return;
+  }
+
+  await prisma.paymentEvent.create({
+    data: {
+      order_id: order.id,
+      reference,
+      event_type: "PAYSTACK_WEBHOOK_FAILED",
+      payload_json: data,
+    },
+  });
+
+  logSecurityEvent("order_marked_failed_via_webhook", { orderId: order.id, reference });
 }

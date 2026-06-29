@@ -1,19 +1,34 @@
 import { z } from "zod";
 
 /**
- * Safe error response - no stack traces, no sensitive info
+ * Known user-facing error messages that are safe to show to customers.
+ * Any error NOT in this set is treated as an internal error and hidden.
+ */
+const SAFE_ERROR_MESSAGES: Record<string, string> = {
+  "Invalid total amount": "Order total is invalid. Please refresh and try again.",
+  "Sold out": "One or more items in your cart are sold out. Please remove them and try again.",
+  "Invalid product": "A product in your cart could not be found. Please refresh and try again.",
+};
+
+/**
+ * Safe error response - no stack traces, no Prisma internals, no sensitive info.
+ * Only whitelisted, user-friendly messages are ever returned to the client.
  */
 export function safeErrorResponse(error: unknown) {
-  let message = "An error occurred";
+  let message = "Something went wrong. Please try again.";
 
   if (error instanceof z.ZodError) {
-    message = `Validation error: ${error.errors[0]?.message || "Invalid input"}`;
+    const field = error.errors[0]?.path?.join(".") || "input";
+    message = `Invalid ${field}. Please check your details and try again.`;
   } else if (error instanceof Error) {
-    // Don't expose stack traces in production
-    message = error.message;
-    if (process.env.NODE_ENV === "production") {
-      message = "Request failed. Please try again.";
+    // Check if this is a known safe error we can show the user
+    const knownKey = Object.keys(SAFE_ERROR_MESSAGES).find(
+      (k) => error.message.startsWith(k) || error.message.includes(k)
+    );
+    if (knownKey) {
+      message = SAFE_ERROR_MESSAGES[knownKey];
     }
+    // All other Error messages (Prisma, internal, etc.) are hidden from users
   }
 
   return {

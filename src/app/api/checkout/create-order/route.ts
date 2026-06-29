@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { nanoid } from "nanoid";
-import { rateLimit, getClientIp } from "@/lib/rate-limiter";
+import { rateLimitMultiple, getClientIp, RATE_LIMITS, createCheckoutRateLimitKeys } from "@/lib/rate-limiter";
 import {
   safeErrorResponse,
   logSecurityEvent,
@@ -46,32 +46,33 @@ export async function POST(request: NextRequest) {
   const clientIp = getClientIp(request);
 
   try {
-    // Rate limiting: IP-based (10 requests per 60 seconds)
-    const rateLimitKey = `checkout:${clientIp}`;
-    const rateLimitResult = await rateLimit(rateLimitKey, {
-      requests: parseInt(process.env.RATE_LIMIT_REQUESTS || "10"),
-      window: parseInt(process.env.RATE_LIMIT_WINDOW_MS || "60000"),
-    });
+    const body = await request.json();
+    const parsed = CreateOrderSchema.parse(body);
+
+    // Rate limiting: Both IP-based AND email-based to prevent multiple payments
+    const { ipKey, emailKey } = createCheckoutRateLimitKeys(clientIp, parsed.email);
+    const rateLimitResult = await rateLimitMultiple([
+      { key: ipKey, config: RATE_LIMITS.checkout },
+      { key: emailKey, config: RATE_LIMITS.checkoutEmail },
+    ]);
 
     if (!rateLimitResult.success) {
       logSecurityEvent("rate_limit_exceeded_checkout", {
         ip: clientIp,
+        email: parsed.email.substring(0, 5) + "***",
         retryAfter: rateLimitResult.retryAfter,
       });
 
       return NextResponse.json(
-        { error: "Too many requests. Please try again later." },
+        { error: "Too many checkout attempts. Please try again later." },
         {
           status: 429,
           headers: {
-            "Retry-After": String(rateLimitResult.retryAfter || 60),
+            "Retry-After": String(rateLimitResult.retryAfter || 300),
           },
         }
       );
     }
-
-    const body = await request.json();
-    const parsed = CreateOrderSchema.parse(body);
 
     // Fraud detection: email velocity
     const fraudSignals = checkFraudSignals(clientIp, parsed.email);
@@ -112,7 +113,6 @@ export async function POST(request: NextRequest) {
       subtotal += lineTotal;
 
       return {
-        product_id: p.id,
         title_snapshot: p.title,
         unit_price_kobo: p.price_kobo,
         quantity: qty,
@@ -128,8 +128,8 @@ export async function POST(request: NextRequest) {
     const shipping = 0;
     const total = subtotal + shipping;
 
-    if (total < 0 || total > 10000000) {
-      // Prevent extreme values (max ~NGN 10M)
+    if (total < 0 || total > 100000000) {
+      // Prevent extreme values (max ~NGN 1M / 100M kobo)
       throw new Error("Invalid total amount");
     }
 
@@ -167,7 +167,10 @@ export async function POST(request: NextRequest) {
       ip: clientIp,
     });
 
-    return NextResponse.json({ orderId: created.id });
+    return NextResponse.json({
+      orderId: created.id,
+      orderNumber: created.order_number,
+    });
   } catch (err: any) {
     logSecurityEvent("checkout_error", {
       error: err?.message,

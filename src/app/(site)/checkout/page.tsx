@@ -58,6 +58,31 @@ export default function CheckoutPage() {
       const created = await createOrderRes.json();
       if (!createOrderRes.ok) throw new Error(created?.error ?? "Failed to create order");
 
+      // Store order details in session storage for success page
+      const orderDetails = {
+        orderNumber: created.orderNumber,
+        customerEmail: email,
+        items: cart.items.map((i) => ({
+          id: i.productId,
+          title: i.title,
+          quantity: i.quantity,
+          unitPrice: i.price_kobo,
+          lineTotal: i.price_kobo * i.quantity,
+          product: {
+            title: i.title,
+            slug: i.slug || "",
+            images: i.image ? [i.image] : [],
+          },
+        })),
+        subtotal,
+        shipping: 0,
+        total: subtotal,
+        currency: "NGN",
+        createdAt: new Date().toISOString(),
+        status: "PAID",
+      };
+      sessionStorage.setItem("lastOrder", JSON.stringify(orderDetails));
+
       const initRes = await fetch("/api/payments/paystack/initialize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
