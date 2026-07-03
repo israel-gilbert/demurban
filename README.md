@@ -1,4 +1,4 @@
 # DemUrban Storefront 
 
-Minimal fashion ecommerce
+Minimal fashion 
 
