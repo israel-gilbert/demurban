@@ -8,6 +8,7 @@ interface OrderEmailData {
   customerName: string;
   items: Array<{
     title: string;
+    size?: string;
     quantity: number;
     unitPrice: number;
     lineTotal: number;
@@ -54,7 +55,9 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
       <tr>
         <td style="padding: 12px; border-bottom: 1px solid #e4e4e7;">
           <div style="font-weight: 500; color: #0a0a0a;">${item.title}</div>
-          <div style="font-size: 14px; color: #71717a;">Qty: ${item.quantity}</div>
+          <div style="font-size: 14px; color: #71717a;">
+            ${item.size ? `Size: ${item.size} | ` : ""}Qty: ${item.quantity}
+          </div>
         </td>
         <td style="padding: 12px; border-bottom: 1px solid #e4e4e7; text-align: right; font-weight: 500;">
           ${formatPrice(item.lineTotal, currency)}
@@ -74,7 +77,6 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
       </head>
       <body style="margin: 0; padding: 0; background-color: #fafafa; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
         <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-          <!-- Header -->
           <div style="text-align: center; margin-bottom: 32px;">
             <h1 style="font-size: 28px; font-weight: 700; color: #0a0a0a; margin: 0; letter-spacing: -0.5px;">
               DEMURBAN
@@ -84,7 +86,6 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
             </p>
           </div>
 
-          <!-- Success Banner -->
           <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
             <div style="font-size: 32px; margin-bottom: 8px;">✓</div>
             <h2 style="font-size: 18px; font-weight: 600; color: #166534; margin: 0;">
@@ -95,7 +96,6 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
             </p>
           </div>
 
-          <!-- Order Details -->
           <div style="background-color: #ffffff; border: 1px solid #e4e4e7; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
             <h3 style="font-size: 16px; font-weight: 600; color: #0a0a0a; margin: 0 0 16px;">
               Order Details
@@ -106,7 +106,6 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
             </div>
           </div>
 
-          <!-- Items -->
           <div style="background-color: #ffffff; border: 1px solid #e4e4e7; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
             <h3 style="font-size: 16px; font-weight: 600; color: #0a0a0a; margin: 0 0 16px;">
               Items Ordered
@@ -127,7 +126,6 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
               </tbody>
             </table>
 
-            <!-- Totals -->
             <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e4e4e7;">
               <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                 <span style="font-size: 14px; color: #71717a;">Subtotal</span>
@@ -144,7 +142,6 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
             </div>
           </div>
 
-          <!-- Shipping Address -->
           <div style="background-color: #ffffff; border: 1px solid #e4e4e7; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
             <h3 style="font-size: 16px; font-weight: 600; color: #0a0a0a; margin: 0 0 16px;">
               Shipping Address
@@ -159,14 +156,12 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
             </div>
           </div>
 
-          <!-- Track Order CTA -->
           <div style="text-align: center; margin-bottom: 24px;">
             <a href="${process.env.APP_URL}/order/track" style="display: inline-block; background-color: #0a0a0a; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 14px; font-weight: 600;">
               Track Your Order
             </a>
           </div>
 
-          <!-- Footer -->
           <div style="text-align: center; padding-top: 24px; border-top: 1px solid #e4e4e7;">
             <p style="font-size: 14px; color: #71717a; margin: 0;">
               Questions? Contact us at <a href="mailto:support@demurban.com" style="color: #c41e3a; text-decoration: none;">support@demurban.com</a>
@@ -192,6 +187,123 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
     return { success: true, data: result };
   } catch (error) {
     console.error("Failed to send order confirmation email:", error);
+    return { success: false, error };
+  }
+}
+
+export async function sendOrderStatusUpdateEmail(
+  data: OrderEmailData & { status: string; trackingNumber?: string; deliveryNotes?: string }
+) {
+  const {
+    orderNumber,
+    customerEmail,
+    customerName,
+    status,
+    trackingNumber,
+    deliveryNotes,
+  } = data;
+
+  const statusMessages: Record<string, { title: string; message: string; color: string }> = {
+    PROCESSING: {
+      title: "Order Being Processed",
+      message: "We're preparing your order for shipment. You'll receive another update soon.",
+      color: "#2563eb",
+    },
+    IN_TRANSIT: {
+      title: "Order Shipped!",
+      message: "Your order is on its way! Track your delivery using the tracking number below.",
+      color: "#7c3aed",
+    },
+    DELIVERED: {
+      title: "Order Delivered!",
+      message: "Your order has been delivered. Enjoy your new DEMURBAN pieces!",
+      color: "#16a34a",
+    },
+  };
+
+  const statusInfo = statusMessages[status] || {
+    title: "Order Update",
+    message: `Your order status has been updated to: ${status}`,
+    color: "#0a0a0a",
+  };
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Order Update - ${orderNumber}</title>
+      </head>
+      <body style="margin: 0; padding: 0; background-color: #fafafa; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+          <div style="text-align: center; margin-bottom: 32px;">
+            <h1 style="font-size: 28px; font-weight: 700; color: #0a0a0a; margin: 0; letter-spacing: -0.5px;">
+              DEMURBAN
+            </h1>
+            <p style="font-size: 14px; color: #71717a; margin-top: 4px;">
+              Where Taste Meets Identity
+            </p>
+          </div>
+
+          <div style="background-color: #ffffff; border: 1px solid #e4e4e7; border-radius: 12px; padding: 24px; margin-bottom: 24px; text-align: center;">
+            <h2 style="font-size: 20px; font-weight: 600; color: ${statusInfo.color}; margin: 0 0 8px;">
+              ${statusInfo.title}
+            </h2>
+            <p style="font-size: 14px; color: #71717a; margin: 0;">
+              ${statusInfo.message}
+            </p>
+          </div>
+
+          <div style="background-color: #ffffff; border: 1px solid #e4e4e7; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+            <h3 style="font-size: 16px; font-weight: 600; color: #0a0a0a; margin: 0 0 16px;">
+              Order ${orderNumber}
+            </h3>
+            ${trackingNumber ? `
+              <div style="margin-bottom: 12px;">
+                <span style="font-size: 14px; color: #71717a;">Tracking Number:</span>
+                <span style="font-size: 14px; font-weight: 500; color: #0a0a0a; margin-left: 8px;">${trackingNumber}</span>
+              </div>
+            ` : ""}
+            ${deliveryNotes ? `
+              <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e4e4e7;">
+                <span style="font-size: 14px; color: #71717a;">Delivery Notes:</span>
+                <p style="font-size: 14px; color: #0a0a0a; margin: 4px 0 0;">${deliveryNotes}</p>
+              </div>
+            ` : ""}
+          </div>
+
+          <div style="text-align: center; margin-bottom: 24px;">
+            <a href="${process.env.APP_URL}/order/track" style="display: inline-block; background-color: #0a0a0a; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 14px; font-weight: 600;">
+              Track Your Order
+            </a>
+          </div>
+
+          <div style="text-align: center; padding-top: 24px; border-top: 1px solid #e4e4e7;">
+            <p style="font-size: 14px; color: #71717a; margin: 0;">
+              Questions? Contact us at <a href="mailto:support@demurban.com" style="color: #c41e3a; text-decoration: none;">support@demurban.com</a>
+            </p>
+            <p style="font-size: 12px; color: #a1a1aa; margin-top: 16px;">
+              © ${new Date().getFullYear()} DEMURBAN. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  try {
+    const result = await resend.emails.send({
+      from: process.env.EMAIL_FROM || "DEMURBAN <orders@demurban.com>",
+      to: customerEmail,
+      subject: `${statusInfo.title} - Order ${orderNumber}`,
+      html,
+    });
+
+    console.log(`Order status email sent to ${customerEmail}:`, result);
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("Failed to send order status email:", error);
     return { success: false, error };
   }
 }

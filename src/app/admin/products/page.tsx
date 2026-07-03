@@ -2,6 +2,14 @@
 
 import { useEffect, useState } from "react";
 
+interface ProductVariant {
+  id: string;
+  size: string;
+  inventory_qty: number;
+  price_kobo: number | null;
+  active: boolean;
+}
+
 interface Product {
   id: string;
   title: string;
@@ -15,6 +23,7 @@ interface Product {
   active: boolean;
   tags: string[];
   images: string[];
+  variants: ProductVariant[];
   created_at: string;
 }
 
@@ -43,6 +52,12 @@ export default function AdminProductsPage() {
     active: true,
     tags: "",
     images: [] as string[],
+    variants: [] as Array<{
+      size: string;
+      inventory_qty: string;
+      price_kobo: string;
+      active: boolean;
+    }>,
   });
   const [uploading, setUploading] = useState(false);
 
@@ -74,6 +89,7 @@ export default function AdminProductsPage() {
       active: true,
       tags: "",
       images: [],
+      variants: [],
     });
     setShowModal(true);
   };
@@ -92,6 +108,12 @@ export default function AdminProductsPage() {
       active: product.active,
       tags: product.tags.join(", "),
       images: product.images,
+      variants: product.variants.map((v) => ({
+        size: v.size,
+        inventory_qty: v.inventory_qty.toString(),
+        price_kobo: v.price_kobo?.toString() || "",
+        active: v.active,
+      })),
     });
     setShowModal(true);
   };
@@ -123,6 +145,12 @@ export default function AdminProductsPage() {
       active: formData.active,
       tags: tagsArray,
       images: formData.images,
+      variants: formData.variants.map((v) => ({
+        size: v.size,
+        inventory_qty: v.inventory_qty,
+        price_kobo: v.price_kobo || null,
+        active: v.active,
+      })),
     };
 
     const res = await fetch(url, {
@@ -148,6 +176,31 @@ export default function AdminProductsPage() {
       fetchProducts();
     }
   };
+
+  const addVariant = () => {
+    setFormData({
+      ...formData,
+      variants: [
+        ...formData.variants,
+        { size: "", inventory_qty: "", price_kobo: "", active: true },
+      ],
+    });
+  };
+
+  const updateVariant = (index: number, field: string, value: string | boolean) => {
+    const newVariants = [...formData.variants];
+    newVariants[index] = { ...newVariants[index], [field]: value };
+    setFormData({ ...formData, variants: newVariants });
+  };
+
+  const removeVariant = (index: number) => {
+    setFormData({
+      ...formData,
+      variants: formData.variants.filter((_, i) => i !== index),
+    });
+  };
+
+  const standardSizes = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
 
   if (loading) {
     return (
@@ -182,6 +235,7 @@ export default function AdminProductsPage() {
                   <th className="px-6 py-4 font-medium">Collection</th>
                   <th className="px-6 py-4 font-medium">Price</th>
                   <th className="px-6 py-4 font-medium">Inventory</th>
+                  <th className="px-6 py-4 font-medium">Variants</th>
                   <th className="px-6 py-4 font-medium">Status</th>
                   <th className="px-6 py-4 font-medium">Actions</th>
                 </tr>
@@ -237,6 +291,26 @@ export default function AdminProductsPage() {
                       {product.inventory_qty}
                     </td>
                     <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-1">
+                        {product.variants && product.variants.length > 0 ? (
+                          product.variants.map((v) => (
+                            <span
+                              key={v.id}
+                              className={`px-2 py-0.5 rounded text-xs ${
+                                v.active && v.inventory_qty > 0
+                                  ? "bg-green-500/20 text-green-400"
+                                  : "bg-red-500/20 text-red-400"
+                              }`}
+                            >
+                              {v.size} ({v.inventory_qty})
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-neutral-500 text-xs">No variants</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-medium ${
                           product.active
@@ -251,7 +325,7 @@ export default function AdminProductsPage() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => openEditModal(product)}
-                          className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
+                          className="p-2 text-neutral hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
                         >
                           <svg
                             className="w-5 h-5"
@@ -301,7 +375,7 @@ export default function AdminProductsPage() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-neutral-900 rounded-xl border border-neutral-800 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-neutral-900 rounded-xl border border-neutral-800 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-neutral-800 flex items-center justify-between">
               <h2 className="text-xl font-semibold text-white">
                 {editingProduct ? "Edit Product" : "Create Product"}
@@ -398,7 +472,7 @@ export default function AdminProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-neutral-300 mb-2">
-                    Price (kobo)
+                    Base Price (kobo)
                   </label>
                   <input
                     type="number"
@@ -425,7 +499,7 @@ export default function AdminProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-neutral-300 mb-2">
-                    Inventory Quantity
+                    Total Inventory (all sizes)
                   </label>
                   <input
                     type="number"
@@ -450,6 +524,115 @@ export default function AdminProductsPage() {
                     className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white"
                   />
                 </div>
+
+                {/* Product Variants Section */}
+                <div className="md:col-span-2">
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="block text-sm font-medium text-neutral-300">
+                      Size Variants
+                    </label>
+                    <button
+                      type="button"
+                      onClick={addVariant}
+                      className="px-3 py-1 text-sm bg-neutral-800 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors"
+                    >
+                      + Add Size
+                    </button>
+                  </div>
+
+                  {/* Quick add standard sizes */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {standardSizes.map((size) => (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => {
+                          if (!formData.variants.find((v) => v.size === size)) {
+                            setFormData({
+                              ...formData,
+                              variants: [
+                                ...formData.variants,
+                                { size, inventory_qty: "", price_kobo: "", active: true },
+                              ],
+                            });
+                          }
+                        }}
+                        className="px-3 py-1 text-xs bg-neutral-800 text-neutral-400 rounded hover:bg-neutral-700 transition-colors"
+                      >
+                        + {size}
+                      </button>
+                    ))}
+                  </div>
+
+                  {formData.variants.length > 0 && (
+                    <div className="space-y-3">
+                      {formData.variants.map((variant, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center gap-3 p-3 bg-neutral-800/50 rounded-lg"
+                        >
+                          <div className="w-24">
+                            <label className="block text-xs text-neutral-400 mb-1">Size</label>
+                            <input
+                              type="text"
+                              value={variant.size}
+                              onChange={(e) => updateVariant(index, "size", e.target.value)}
+                              placeholder="S, M, L..."
+                              className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-white"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <label className="block text-xs text-neutral-400 mb-1">Quantity</label>
+                            <input
+                              type="number"
+                              value={variant.inventory_qty}
+                              onChange={(e) => updateVariant(index, "inventory_qty", e.target.value)}
+                              placeholder="0"
+                              className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-white"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <label className="block text-xs text-neutral-400 mb-1">Price (kobo)</label>
+                            <input
+                              type="number"
+                              value={variant.price_kobo}
+                              onChange={(e) => updateVariant(index, "price_kobo", e.target.value)}
+                              placeholder="Leave empty for base price"
+                              className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-white"
+                            />
+                          </div>
+                          <div className="flex items-center gap-2 pt-5">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={variant.active}
+                                onChange={(e) => updateVariant(index, "active", e.target.checked)}
+                                className="w-4 h-4 rounded border-neutral-700 bg-neutral-800"
+                              />
+                              <span className="text-xs text-neutral-400">Active</span>
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => removeVariant(index)}
+                              className="p-1 text-neutral-500 hover:text-red-400 transition-colors"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {formData.variants.length === 0 && (
+                    <p className="text-sm text-neutral-500 text-center py-4">
+                      No size variants added. Click "+ Add Size" or use the quick add buttons above.
+                    </p>
+                  )}
+                </div>
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-neutral-300 mb-2">
                     Product Images

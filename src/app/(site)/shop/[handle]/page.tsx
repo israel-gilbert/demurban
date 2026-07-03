@@ -31,8 +31,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
     );
   }
 
-  const available = product.inventory_qty > 0;
-  const related = (await fetchProducts({ limit: 8 })).filter((p) => p.id !== product.id).slice(0, 4);
+  const variants = (product as any).variants || [];
+  const hasVariants = variants.length > 0;
+  const hasStock = hasVariants
+    ? variants.some((v: any) => v.active && v.inventory_qty > 0)
+    : product.inventory_qty > 0;
+
+  const related = (await fetchProducts({ limit: 8 }))
+    .filter((p) => p.id !== product.id)
+    .slice(0, 4);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 md:px-6 md:py-14 lg:px-8">
@@ -98,7 +105,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </div>
             ) : null}
 
-            {!available ? (
+            {!hasStock ? (
               <span className="rounded-full border border-black/10 dark:border-white/10 bg-white/60 dark:bg-neutral-950/40 px-3 py-1 text-xs font-semibold text-neutral-700 dark:text-neutral-200">
                 Sold out
               </span>
@@ -109,7 +116,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
             {product.description ?? "Premium streetwear designed for those who refuse to blend in."}
           </p>
 
-          <div className="mt-8 flex flex-wrap gap-3">
+          {/* Add to Cart with Size Selector */}
+          <div className="mt-8">
             <AddToCartButton
               product={{
                 id: product.id,
@@ -118,16 +126,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 price_kobo: product.price_kobo,
                 currency: product.currency,
                 image: product.images?.[0],
+                variants: variants,
               }}
-              disabled={!available}
+              disabled={!hasStock}
             />
-
-            <Link
-              href="/cart"
-              className="inline-flex h-11 items-center justify-center rounded-full border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-950 px-6 text-sm font-semibold text-neutral-900 dark:text-neutral-50 hover:opacity-90 transition"
-            >
-              View Cart
-            </Link>
           </div>
 
           {/* Details */}
