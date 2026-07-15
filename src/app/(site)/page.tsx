@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import ProductGrid from "@/components/ProductGrid";
-import CollectionsShowcase from "@/components/CollectionsShowcase";
 import WhatDefinesOurWear from "@/components/WhatDefinesOurWear";
 import CommunityShowcase from "@/components/CommunityShowcase";
 import { AnimatedSection } from "@/components/AnimatedSection";
@@ -145,21 +144,6 @@ export default async function HomePage() {
         )}
       </AnimatedSection>
 
-      {/* Collections Showcase - Masonry Grid */}
-      <AnimatedSection>
-        <CollectionsShowcase collections={collections} />
-      </AnimatedSection>
-
-      {/* What Defines Our Wear Section */}
-      <AnimatedSection>
-        <WhatDefinesOurWear />
-      </AnimatedSection>
-
-      {/* Community Showcase */}
-      <AnimatedSection>
-        <CommunityShowcase />
-      </AnimatedSection>
-
       {/* New Arrivals */}
       {newArrivals.length > 0 && (
         <AnimatedSection className="mx-auto w-full max-w-7xl px-4 py-16 md:px-6 md:py-20 lg:px-8">
@@ -183,6 +167,11 @@ export default async function HomePage() {
           <ProductGrid products={newArrivals} />
         </AnimatedSection>
       )}
+
+      {/* Community Showcase */}
+      <AnimatedSection>
+        <CommunityShowcase />
+      </AnimatedSection>
     </div>
   );
 }

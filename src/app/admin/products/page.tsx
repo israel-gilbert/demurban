@@ -106,9 +106,9 @@ export default function AdminProductsPage() {
       currency: product.currency,
       inventory_qty: product.inventory_qty.toString(),
       active: product.active,
-      tags: product.tags.join(", "),
-      images: product.images,
-      variants: product.variants.map((v) => ({
+      tags: (product.tags || []).join(", "),
+      images: product.images || [],
+      variants: (product.variants || []).map((v) => ({
         size: v.size,
         inventory_qty: v.inventory_qty.toString(),
         price_kobo: v.price_kobo?.toString() || "",
