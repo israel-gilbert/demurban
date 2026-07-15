@@ -7,7 +7,8 @@ import { AnimatedSection } from "@/components/AnimatedSection";
 import { fetchProducts } from "@/lib/server-actions";
 import type { Product } from "@/lib/types";
 
-export const revalidate = 3600;
+// 1. Force Next.js to render this page dynamically on every single refresh
+export const revalidate = 0; 
 
 export default async function HomePage() {
   let products: Product[] = [];
@@ -20,9 +21,23 @@ export default async function HomePage() {
     error = "Unable to load products at the moment";
   }
 
-  const featured = products.slice(0, 8);
-  const newArrivals = products.filter((p) => p.tags?.includes("new")).slice(0, 8);
-  const heroProducts = products.slice(0, 7);
+  // 2. Helper function to shuffle array items randomly (Fisher-Yates shuffle)
+  const shuffle = <T,>(array: T[]): T[] => {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+
+  // 3. Shuffle all available products
+  const shuffledProducts = shuffle(products);
+
+  // 4. Assign random slices directly (No tag filtering needed)
+  const featured = shuffledProducts.slice(0, 8);     // Grab 8 completely random products
+  const newArrivals = shuffledProducts.slice(0, 6);   // Grab 6 completely random products
+  const heroProducts = shuffledProducts.slice(0, 7);  // Grab 7 completely random products
 
   // IMPORTANT: priceRange is now in KOBO (₦ * 100)
   const collections = [

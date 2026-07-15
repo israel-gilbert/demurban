@@ -10,13 +10,13 @@ import { ArrowLeft } from "lucide-react";
 export const revalidate = 3600;
 
 interface ProductPageProps {
-  params: Promise<{ handle: string }>;
+  params: Promise<{ slug: string }>; // 1. Updated from 'handle' to 'slug'
 }
 
-// 1. Resolve dynamic metadata for SEO
+// Resolve dynamic metadata for SEO
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const { handle } = await params;
-  const product = await fetchProductBySlug(handle);
+  const { slug } = await params; // 2. Updated to destruct 'slug'
+  const product = await fetchProductBySlug(slug);
 
   if (!product) {
     return {
@@ -36,8 +36,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const { handle } = await params;
-  const product = await fetchProductBySlug(handle);
+  const { slug } = await params; // 3. Updated to destruct 'slug'
+  const product = await fetchProductBySlug(slug);
 
   if (!product) {
     return (
@@ -61,7 +61,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     ? variants.some((v: any) => v.active && v.inventory_qty > 0)
     : product.inventory_qty > 0;
 
-  // 2. Optimized Related Products querying to guarantee 4 distinct items
+  // Optimized Related Products querying to guarantee 4 distinct items
   const rawRelatedProducts = await fetchProducts({ limit: 10 });
   const related = rawRelatedProducts
     .filter((p) => p.id !== product.id)

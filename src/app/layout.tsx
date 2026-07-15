@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Oswald, Playfair_Display } from "next/font/google"; // 1. Imported Playfair Display
+import { Inter, Oswald, Playfair_Display } from "next/font/google";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
@@ -14,7 +14,6 @@ const oswald = Oswald({
   variable: "--font-oswald",
 });
 
-// 2. Configured the editorial font family with deep weights for high-fashion display text
 const playfair = Playfair_Display({
   subsets: ["latin"],
   style: ["normal", "italic"],
@@ -30,11 +29,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    /* 3. Injected the playfair variable class here */
     <html lang="en" className={`${inter.variable} ${oswald.variable} ${playfair.variable}`} suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script
+          suppressHydrationWarning // Hydration fix
           dangerouslySetInnerHTML={{
             __html: `(() => {
               try {
