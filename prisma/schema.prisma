@@ -8,8 +8,10 @@ datasource db {
 }
 
 enum ProductCollection {
-  LATEST_DROP
-  ARCHIVE
+  HOODIES
+  VARSITY_JACKET
+  POLO
+  JOGGERS
 }
 
 enum OrderStatus {
@@ -28,7 +30,7 @@ model Product {
   title              String
   slug               String          @unique
   description        String?
-  collection         ProductCollection @default(LATEST_DROP)
+  collection         ProductCollection @default(HOODIES)
   price_kobo         Int
   compare_at_kobo    Int?
   currency           String          @default("NGN")

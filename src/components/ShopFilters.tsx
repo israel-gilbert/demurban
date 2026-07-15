@@ -11,10 +11,13 @@ interface ShopFiltersProps {
   priceRange: { min: number; max: number };
 }
 
-const COLLECTIONS: { label: string; value: "ALL" | "latest" | "archive" }[] = [
-  { label: "All", value: "ALL" },
-  { label: "Latest Drop", value: "latest" },
-  { label: "Archive", value: "archive" },
+// 1. UPDATED: Real streetwear collections mapped to lowercased slugs for clean URL routes
+const COLLECTIONS = [
+  { label: "All", value: "ALL" as const },
+  { label: "Varsity Jacket", value: "varsity jacket" as const },
+  { label: "Hoodies", value: "hoodies" as const },
+  { label: "Polo", value: "polo" as const },
+  { label: "Joggers", value: "joggers" as const },
 ];
 
 const SORT_OPTIONS: { label: string; value: SortOption }[] = [
@@ -32,8 +35,12 @@ export default function ShopFilters({ availableTags, priceRange }: ShopFiltersPr
   const [isPending, startTransition] = useTransition();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  // Get current filter values from URL
-  const currentCollection = (searchParams.get("collection") as "latest" | "archive" | null) || "ALL";
+  // 2. UPDATED: Dynamically verify and set active collection from the URL
+  const rawCollection = searchParams.get("collection");
+  const currentCollection = COLLECTIONS.some(col => col.value === rawCollection)
+    ? (rawCollection as typeof COLLECTIONS[number]["value"])
+    : "ALL";
+
   const currentTag = searchParams.get("tag") || "";
   const currentSort = (searchParams.get("sort") as SortOption) || "newest";
   const currentMinPrice = searchParams.get("minPrice") ? Number(searchParams.get("minPrice")) : priceRange.min;
@@ -179,7 +186,7 @@ export default function ShopFilters({ availableTags, priceRange }: ShopFiltersPr
           </div>
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-        Range: {formatNGNFromKobo(priceRange.min)} — {formatNGNFromKobo(priceRange.max)}
+          Range: {formatNGNFromKobo(priceRange.min)} — {formatNGNFromKobo(priceRange.max)}
         </p>
       </div>
 

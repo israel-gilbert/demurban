@@ -1,14 +1,38 @@
+import { Metadata } from "next";
 import Link from "next/link";
 import { fetchProductBySlug, fetchProducts } from "@/lib/server-actions";
 import { formatNGNFromKobo } from "@/lib/money";
 import AddToCartButton from "@/components/AddToCartButton";
 import ProductGrid from "@/components/ProductGrid";
+import ProductGallery from "@/components/ProductGallery";
 import { ArrowLeft } from "lucide-react";
 
 export const revalidate = 3600;
 
 interface ProductPageProps {
   params: Promise<{ handle: string }>;
+}
+
+// 1. Resolve dynamic metadata for SEO
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const { handle } = await params;
+  const product = await fetchProductBySlug(handle);
+
+  if (!product) {
+    return {
+      title: "Product Not Found | Demurban",
+    };
+  }
+
+  return {
+    title: `${product.title} | Demurban`,
+    description: product.description ?? "Premium streetwear designed for those who refuse to blend in.",
+    openGraph: {
+      title: product.title,
+      description: product.description ?? "Premium streetwear designed for those who refuse to blend in.",
+      images: product.images?.[0] ? [{ url: product.images[0] }] : [],
+    },
+  };
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
@@ -37,7 +61,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
     ? variants.some((v: any) => v.active && v.inventory_qty > 0)
     : product.inventory_qty > 0;
 
-  const related = (await fetchProducts({ limit: 8 }))
+  // 2. Optimized Related Products querying to guarantee 4 distinct items
+  const rawRelatedProducts = await fetchProducts({ limit: 10 });
+  const related = rawRelatedProducts
     .filter((p) => p.id !== product.id)
     .slice(0, 4);
 
@@ -51,34 +77,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </Link>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-2">
-        {/* Images */}
-        <div className="space-y-3">
-          <div className="aspect-[3/4] overflow-hidden rounded-3xl border border-black/5 dark:border-white/10 bg-neutral-100 dark:bg-neutral-900">
-            <img
-              src={product.images?.[0] ?? "/images/dem4.jpg"}
-              alt={product.title}
-              className="h-full w-full object-cover"
-            />
-          </div>
-
-          {product.images?.length > 1 ? (
-            <div className="grid grid-cols-4 gap-3">
-              {product.images.slice(0, 4).map((src) => (
-                <div
-                  key={src}
-                  className="aspect-square overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 bg-neutral-100 dark:bg-neutral-900"
-                >
-                  <img
-                    src={src}
-                    alt=""
-                    className="h-full w-full object-cover transition-transform duration-300 ease-out hover:scale-[1.03]"
-                    loading="lazy"
-                  />
-                </div>
-              ))}
-            </div>
-          ) : null}
-        </div>
+        {/* Dynamic Image Gallery with State */}
+        <ProductGallery images={product.images || []} title={product.title} />
 
         {/* Product Info */}
         <div>

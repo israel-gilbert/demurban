@@ -1,4 +1,4 @@
-export type ProductCollection = "LATEST_DROP" | "ARCHIVE";
+export type ProductCollection = "HOODIES" | "VARSITY_JACKET" | "POLO" | "JOGGERS" ;
 
 export interface Product {
   id: string;

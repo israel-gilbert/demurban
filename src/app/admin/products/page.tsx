@@ -44,7 +44,7 @@ export default function AdminProductsPage() {
     title: "",
     slug: "",
     description: "",
-    collection: "LATEST_DROP",
+    collection: "HOODIES", // 1. UPDATED: Updated initial default value to match new schema
     price_kobo: "",
     compare_at_kobo: "",
     currency: "NGN",
@@ -81,7 +81,7 @@ export default function AdminProductsPage() {
       title: "",
       slug: "",
       description: "",
-      collection: "LATEST_DROP",
+      collection: "HOODIES", // 2. UPDATED: Resets form to a valid active collection
       price_kobo: "",
       compare_at_kobo: "",
       currency: "NGN",
@@ -453,8 +453,11 @@ export default function AdminProductsPage() {
                     }
                     className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white"
                   >
-                    <option value="LATEST_DROP">Latest Drop</option>
-                    <option value="ARCHIVE">Archive</option>
+                    {/* 3. UPDATED: Dropdown options fully updated to match database enum values */}
+                    <option value="HOODIES">Hoodies</option>
+                    <option value="VARSITY_JACKET">Varsity Jacket</option>
+                    <option value="POLO">Polo</option>
+                    <option value="JOGGERS">Joggers</option>
                   </select>
                 </div>
                 <div>

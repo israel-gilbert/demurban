@@ -83,16 +83,6 @@ export default async function HomePage() {
 
         {/* Hero Content - Centered Overlay */}
         <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 max-w-2xl">
-          {/* Tags */}
-          <div className="flex flex-wrap gap-2 justify-center mb-6">
-            <span className="inline-block rounded-full bg-white/20 backdrop-blur-sm px-3 py-1 text-xs font-medium text-white border border-white/30">
-              Bold
-            </span>
-            <span className="inline-block rounded-full bg-white/20 backdrop-blur-sm px-3 py-1 text-xs font-medium text-white border border-white/30">
-              Unapologetic
-            </span>
-          </div>
-
           {/* Headline */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6 font-[var(--font-oswald)] uppercase tracking-tight">
             Where Taste Meets Identity
@@ -103,22 +93,6 @@ export default async function HomePage() {
             Discover unisex streetwear designed for those who refuse to blend in. Premium pieces that celebrate culture, creativity, and
             self-expression.
           </p>
-
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              href="/shop"
-              className="inline-flex items-center justify-center h-12 px-8 rounded-full bg-white text-black font-bold text-sm hover:bg-white/90 transition-all"
-            >
-              Shop All Items
-            </Link>
-            <Link
-              href="/about"
-              className="inline-flex items-center justify-center h-12 px-8 rounded-full bg-transparent border-2 border-white text-white font-bold text-sm hover:bg-white/10 transition-all"
-            >
-              Learn More
-            </Link>
-          </div>
         </div>
 
         {/* Product Carousel Strip - Bottom of Hero */}
@@ -149,19 +123,11 @@ export default async function HomePage() {
         <AnimatedSection className="mx-auto w-full max-w-7xl px-4 py-16 md:px-6 md:py-20 lg:px-8">
           <div className="flex items-end justify-between gap-4 mb-8">
             <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">Latest Drop</p>
               <h2 className="mt-2 text-2xl md:text-3xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">
                 STAY DEM
               </h2>
             </div>
 
-            <Link
-              href="/shop?tag=new"
-              className="group flex items-center gap-2 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-50 transition"
-            >
-              View all
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </Link>
           </div>
 
           <ProductGrid products={newArrivals} />

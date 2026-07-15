@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import ProductGrid from "@/components/ProductGrid";
 import ShopFilters from "@/components/ShopFilters";
 import ShopLayout from "@/components/ShopLayout";
-import ShopHeader from "@/components/ShopHeader";
+
 import {
   fetchProductsWithFilters,
   getAvailableTags,
@@ -96,13 +96,20 @@ async function ShopContent({ filters }: { filters: FilterOptions }) {
 export default async function ShopPage({ searchParams }: ShopPageProps) {
   const params = await searchParams;
 
+  // 1. Exact collection mapping dictionary for Demurban streetwear collections
+  const collectionMap: Record<string, ProductCollection> = {
+  "hoodies": "HOODIES",
+  "varsity jacket": "VARSITY_JACKET", // Update this to use the underscore
+  "polo": "POLO",
+  "joggers": "JOGGERS",
+};
+  // 2. Resolve parameters safely without throwing TypeScript errors
+  const selectedCollection = params.collection 
+    ? collectionMap[params.collection.toLowerCase()] 
+    : undefined;
+
   const filters: FilterOptions = {
-    collection:
-      params.collection === "archive"
-        ? "ARCHIVE"
-        : params.collection === "latest"
-        ? "LATEST_DROP"
-        : undefined,
+    collection: selectedCollection,
     tag: params.tag,
     sort: (params.sort as SortOption) || "newest",
     minPrice: params.minPrice ? Number(params.minPrice) : undefined,
@@ -112,7 +119,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 
   return (
     <ShopLayout
-      header={<ShopHeader />}
+      header
       filters={
         <Suspense fallback={<FiltersSkeleton />}>
           <FiltersSection />

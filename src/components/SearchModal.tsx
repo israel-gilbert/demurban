@@ -181,9 +181,6 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
-                        {product.collection === "ARCHIVE" ? "Archive" : "Latest Drop"}
-                      </p>
                       <p className="mt-0.5 truncate text-sm font-semibold text-neutral-900 dark:text-neutral-50">
                         {product.title}
                       </p>
