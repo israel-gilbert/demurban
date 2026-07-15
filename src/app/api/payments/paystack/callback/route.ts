@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { logSecurityEvent } from "@/lib/security";
 import { getAppUrl } from "@/lib/app-url";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 
 /**
  * Callback handler for Paystack payment verification
@@ -41,6 +42,9 @@ export async function GET(request: NextRequest) {
     // Find the order
     const order = await prisma.order.findUnique({
       where: { paystack_reference: reference },
+      include: {
+        items: true,
+      },
     });
 
     if (!order) {
@@ -120,6 +124,44 @@ export async function GET(request: NextRequest) {
                 payload_json: json,
               },
             });
+
+            // Send confirmation email (webhook didn't get here first —
+            // e.g. local dev where Paystack can't reach the webhook URL).
+            // updated.count > 0 guarantees this runs at most once per order.
+            try {
+              const shippingAddress = order.shipping_address_json as any;
+              await sendOrderConfirmationEmail({
+                orderNumber: order.order_number,
+                customerEmail: order.customer_email,
+                customerName: shippingAddress?.fullName || "Customer",
+                items: order.items.map((item) => ({
+                  title: item.title_snapshot,
+                  size: item.size_snapshot || (item.variant_json as any)?.size || undefined,
+                  quantity: item.quantity,
+                  unitPrice: item.unit_price_kobo,
+                  lineTotal: item.line_total_kobo,
+                })),
+                subtotal: order.subtotal_kobo,
+                shipping: order.shipping_kobo,
+                total: order.total_kobo,
+                currency: order.currency,
+                shippingAddress: {
+                  fullName: shippingAddress?.fullName || "",
+                  address1: shippingAddress?.address1 || "",
+                  address2: shippingAddress?.address2,
+                  city: shippingAddress?.city || "",
+                  state: shippingAddress?.state || "",
+                  country: shippingAddress?.country || "",
+                  postalCode: shippingAddress?.postalCode,
+                },
+              });
+              logSecurityEvent("callback_email_sent", { orderId: order.id });
+            } catch (emailError) {
+              logSecurityEvent("callback_email_failed", {
+                orderId: order.id,
+                error: emailError instanceof Error ? emailError.message : "Unknown",
+              });
+            }
           }
 
           return NextResponse.redirect(new URL("/order/success", appUrl));

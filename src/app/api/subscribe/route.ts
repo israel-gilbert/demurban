@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/db";
 
 function getResend() {
   const apiKey = process.env.RESEND_API_KEY;
@@ -9,8 +9,6 @@ function getResend() {
   }
   return new Resend(apiKey);
 }
-
-const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {
@@ -114,7 +112,7 @@ export async function POST(req: NextRequest) {
 
     // Send welcome email to new subscriber
     const { error } = await getResend().emails.send({
-      from: `DEM Urban <onboarding@resend.dev>`,
+      from: `DEM Urban <onboarding@demurban.com>`,
       to: email,
       subject: "Welcome to the DEM Insider 🔥",
       html: `
