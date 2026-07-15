@@ -8,9 +8,14 @@ import { ArrowRight, Trash2 } from "lucide-react";
 
 export default function CartPage() {
   const [cart, setCart] = useState<CartState>({ currency: "NGN", items: [] });
+  const [shippingFee, setShippingFee] = useState(0);
 
   useEffect(() => {
     setCart(getCart());
+    fetch("/api/shipping")
+      .then((res) => res.json())
+      .then((data) => setShippingFee(data.shipping_fee_kobo ?? 0))
+      .catch(() => {});
   }, []);
 
   const subtotal = useMemo(() => cartSubtotalKobo(cart), [cart]);
@@ -43,6 +48,7 @@ export default function CartPage() {
                       <p className="font-semibold text-neutral-900 dark:text-neutral-50">{item.title}</p>
 
                       <p className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">
+                        {item.variant?.size ? `Size: ${String(item.variant.size)} · ` : ""}
                         {formatNGNFromKobo(item.price_kobo)} each
                       </p>
 
@@ -123,13 +129,15 @@ export default function CartPage() {
 
               <div className="flex items-center justify-between border-b border-black/5 dark:border-white/10 pb-4">
                 <p className="text-sm text-neutral-600 dark:text-neutral-400">Shipping</p>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400 font-medium">Calculated at checkout</p>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400 font-medium">
+                  {shippingFee === 0 ? "Free" : formatNGNFromKobo(shippingFee)}
+                </p>
               </div>
 
               <div className="flex items-center justify-between pt-2">
                 <p className="font-semibold text-neutral-900 dark:text-neutral-50">Estimated Total</p>
                 <p className="text-xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">
-                  {formatNGNFromKobo(subtotal)}
+                  {formatNGNFromKobo(subtotal + shippingFee)}
                 </p>
               </div>
             </div>

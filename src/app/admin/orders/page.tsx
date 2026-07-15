@@ -86,11 +86,14 @@ export default function AdminOrdersPage() {
     fetch(`/api/admin/orders?${params.toString()}`)
       .then((res) => res.json())
       .then((data) => {
-        setOrders(data.orders);
-        setTotalPages(data.pagination.totalPages);
+        setOrders(Array.isArray(data.orders) ? data.orders : []);
+        setTotalPages(data.pagination?.totalPages ?? 1);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setOrders([]);
+        setLoading(false);
+      });
   };
 
   useEffect(() => {

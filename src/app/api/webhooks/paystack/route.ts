@@ -176,6 +176,7 @@ async function handleSuccessfulPayment(data: any) {
       customerName: shippingAddress?.fullName || "Customer",
       items: order.items.map((item) => ({
         title: item.title_snapshot,
+        size: item.size_snapshot || (item.variant_json as any)?.size || undefined,
         quantity: item.quantity,
         unitPrice: item.unit_price_kobo,
         lineTotal: item.line_total_kobo,

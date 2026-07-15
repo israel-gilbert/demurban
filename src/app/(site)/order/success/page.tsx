@@ -170,6 +170,7 @@ export default function OrderSuccessPage() {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{item.title}</p>
                     <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                      {(item as { size?: string | null }).size ? `Size: ${(item as { size?: string | null }).size} · ` : ""}
                       Qty: {item.quantity} × {formatPrice(item.unitPrice, order.currency)}
                     </p>
                   </div>

@@ -19,12 +19,18 @@ export default function CheckoutPage() {
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [country, setCountry] = useState("Nigeria");
+  const [shippingFee, setShippingFee] = useState(0);
 
   useEffect(() => {
     setCart(getCart());
+    fetch("/api/shipping")
+      .then((res) => res.json())
+      .then((data) => setShippingFee(data.shipping_fee_kobo ?? 0))
+      .catch(() => {});
   }, []);
 
   const subtotal = useMemo(() => cartSubtotalKobo(cart), [cart]);
+  const total = subtotal + shippingFee;
 
   async function onPay(e: React.FormEvent) {
     e.preventDefault();
@@ -65,6 +71,7 @@ export default function CheckoutPage() {
         items: cart.items.map((i) => ({
           id: i.productId,
           title: i.title,
+          size: (i.variant?.size as string) || null,
           quantity: i.quantity,
           unitPrice: i.price_kobo,
           lineTotal: i.price_kobo * i.quantity,
@@ -75,8 +82,8 @@ export default function CheckoutPage() {
           },
         })),
         subtotal,
-        shipping: 0,
-        total: subtotal,
+        shipping: shippingFee,
+        total,
         currency: "NGN",
         createdAt: new Date().toISOString(),
         status: "PAID",
@@ -266,7 +273,9 @@ export default function CheckoutPage() {
               >
                 <div className="text-sm flex-1">
                   <p className="font-semibold text-foreground line-clamp-1">{i.title}</p>
-                  <p className="text-xs text-muted-foreground">Qty: {i.quantity}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {i.variant?.size ? `Size: ${String(i.variant.size)} · ` : ""}Qty: {i.quantity}
+                  </p>
                 </div>
                 <p className="text-sm font-semibold text-foreground shrink-0">
                   {formatNGNFromKobo(i.price_kobo * i.quantity)}
@@ -283,12 +292,14 @@ export default function CheckoutPage() {
 
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Shipping</span>
-              <span className="font-medium text-foreground">Calculated</span>
+              <span className="font-medium text-foreground">
+                {shippingFee === 0 ? "Free" : formatNGNFromKobo(shippingFee)}
+              </span>
             </div>
 
             <div className="flex items-center justify-between text-base font-semibold pt-3 border-t border-border">
               <span className="text-foreground">Total</span>
-              <span className="text-foreground">{formatNGNFromKobo(subtotal)}</span>
+              <span className="text-foreground">{formatNGNFromKobo(total)}</span>
             </div>
           </div>
         </aside>

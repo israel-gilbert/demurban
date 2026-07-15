@@ -9,6 +9,7 @@ import {
   checkFraudSignals,
   recordPaymentAttempt,
 } from "@/lib/security";
+import { getShippingFeeKobo } from "@/lib/settings";
 
 const CreateOrderSchema = z.object({
   email: z.string().email().max(255),
@@ -96,6 +97,7 @@ export async function POST(request: NextRequest) {
     const productIds = parsed.items.map((i) => i.productId);
     const products = await prisma.product.findMany({
       where: { id: { in: productIds }, active: true },
+      include: { variants: true },
     });
 
     const productMap = new Map<string, typeof products[number]>(
@@ -106,26 +108,45 @@ export async function POST(request: NextRequest) {
     const orderItems = parsed.items.map((i) => {
       const p = productMap.get(i.productId);
       if (!p) throw new Error(`Invalid product: ${i.productId}`);
-      if (p.inventory_qty <= 0) throw new Error(`Sold out: ${p.title}`);
 
+      // Resolve the picked variant (size) server-side
+      const variantId = i.variant?.id as string | undefined;
+      const variantSize = i.variant?.size as string | undefined;
+      const variant = variantId
+        ? p.variants.find((v) => v.id === variantId)
+        : variantSize
+          ? p.variants.find((v) => v.size === variantSize)
+          : undefined;
+
+      if (variant) {
+        if (!variant.active || variant.inventory_qty < i.quantity) {
+          throw new Error(`Sold out: ${p.title} (${variant.size})`);
+        }
+      } else if (p.inventory_qty <= 0) {
+        throw new Error(`Sold out: ${p.title}`);
+      }
+
+      const unitPrice = variant?.price_kobo ?? p.price_kobo;
       const qty = i.quantity;
-      const lineTotal = p.price_kobo * qty;
+      const lineTotal = unitPrice * qty;
       subtotal += lineTotal;
 
       return {
         title_snapshot: p.title,
-        unit_price_kobo: p.price_kobo,
+        size_snapshot: variant?.size ?? null,
+        unit_price_kobo: unitPrice,
         quantity: qty,
         variant_json: i.variant ? (i.variant as any) : null,
         line_total_kobo: lineTotal,
         product: {
           connect: { id: p.id },
         },
+        ...(variant ? { variant: { connect: { id: variant.id } } } : {}),
       };
     });
 
-    // Shipping logic: start simple
-    const shipping = 0;
+    // Shipping: flat fee configured by admin (0 = free)
+    const shipping = await getShippingFeeKobo();
     const total = subtotal + shipping;
 
     if (total < 0 || total > 100000000) {

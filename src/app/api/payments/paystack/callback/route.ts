@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { logSecurityEvent } from "@/lib/security";
+import { getAppUrl } from "@/lib/app-url";
 
 /**
  * Callback handler for Paystack payment verification
@@ -16,7 +17,7 @@ import { logSecurityEvent } from "@/lib/security";
  */
 
 export async function GET(request: NextRequest) {
-  const appUrl = process.env.APP_URL || "https://demurban.com";
+  const appUrl = getAppUrl(request);
   const secretKey = process.env.PAYSTACK_SECRET_KEY;
 
   try {

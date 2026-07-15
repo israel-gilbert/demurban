@@ -156,3 +156,9 @@ model Subscriber {
 
   @@index([active])
 }
+
+model StoreSetting {
+  key        String   @id
+  value      String
+  updated_at DateTime @updatedAt
+}

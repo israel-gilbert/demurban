@@ -151,7 +151,7 @@ export default async function HomePage() {
             <div>
               <p className="text-xs uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">Latest Drop</p>
               <h2 className="mt-2 text-2xl md:text-3xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">
-                New Arrivals
+                STAY DEM
               </h2>
             </div>
 

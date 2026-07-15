@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { rateLimit, getClientIp } from "@/lib/rate-limiter";
 import { safeErrorResponse, logSecurityEvent } from "@/lib/security";
+import { getAppUrl } from "@/lib/app-url";
 
 const Schema = z.object({
   orderId: z.string().min(1).max(50).cuid(),
@@ -10,16 +11,11 @@ const Schema = z.object({
 
 export async function POST(request: NextRequest) {
   const secretKey = process.env.PAYSTACK_SECRET_KEY;
-  const appUrl = process.env.APP_URL;
+  const appUrl = getAppUrl(request);
   const clientIp = getClientIp(request);
 
   if (!secretKey) {
     logSecurityEvent("missing_env_var", { var: "PAYSTACK_SECRET_KEY" });
-    return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
-  }
-
-  if (!appUrl) {
-    logSecurityEvent("missing_env_var", { var: "APP_URL" });
     return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
   }
 

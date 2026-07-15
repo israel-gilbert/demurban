@@ -30,9 +30,6 @@ export async function POST(request: NextRequest) {
             },
           },
         },
-        payment_events: {
-          orderBy: { created_at: "desc" },
-        },
       },
     });
 
@@ -57,19 +54,19 @@ export async function POST(request: NextRequest) {
       paidAt: order.paid_at,
       createdAt: order.created_at,
       updatedAt: order.updated_at,
+      trackingNumber: order.tracking_number,
+      deliveryNotes: order.delivery_notes,
+      shippedAt: order.shipped_at,
+      deliveredAt: order.delivered_at,
       items: order.items.map((item) => ({
         id: item.id,
         title: item.title_snapshot,
+        size: item.size_snapshot || (item.variant_json as { size?: string } | null)?.size || null,
         quantity: item.quantity,
         unitPrice: item.unit_price_kobo,
         lineTotal: item.line_total_kobo,
         variant: item.variant_json,
         product: item.product,
-      })),
-      paymentEvents: order.payment_events.map((event) => ({
-        id: event.id,
-        eventType: event.event_type,
-        createdAt: event.created_at,
       })),
     };
 
