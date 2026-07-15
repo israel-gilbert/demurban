@@ -8,7 +8,14 @@ export default {
     "./src/lib/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+   // tailwind.config.js
+extend: {
+  fontFamily: {
+    sans: ["var(--font-inter)", "sans-serif"],
+    oswald: ["var(--font-oswald)", "sans-serif"], // mapped if you use it for accents
+    serif: ["var(--font-serif)", "serif"],        // mapped to your new Playfair configuration
+  },
+},
   },
   plugins: [],
 } satisfies Config;

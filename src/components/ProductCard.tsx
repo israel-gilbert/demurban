@@ -28,8 +28,7 @@ export default function ProductCard({ product }: { product: Product }) {
             alt={product.title}
             fill
             className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.04]"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-          />
+                      />
 
           <motion.div
             className="absolute inset-0 bg-black/0 group-hover:bg-black/5"

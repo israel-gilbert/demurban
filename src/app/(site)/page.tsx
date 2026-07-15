@@ -21,7 +21,7 @@ export default async function HomePage() {
   }
 
   const featured = products.slice(0, 8);
-  const newArrivals = products.filter((p) => p.tags?.includes("new")).slice(0, 4);
+  const newArrivals = products.filter((p) => p.tags?.includes("new")).slice(0, 8);
   const heroProducts = products.slice(0, 7);
 
   // IMPORTANT: priceRange is now in KOBO (₦ * 100)
@@ -133,6 +133,8 @@ export default async function HomePage() {
           <ProductGrid products={newArrivals} />
         </AnimatedSection>
       )}
+
+      
 
       {/* Community Showcase */}
       <AnimatedSection>
