@@ -83,7 +83,7 @@ export async function PUT(
       },
     });
 
-   // Update variants if provided
+    // Update variants if provided
     if (variants && Array.isArray(variants)) {
       // Step 1: Soft-delete all existing variants (preserves historical order relations)
       await prisma.productVariant.updateMany({
@@ -119,6 +119,23 @@ export async function PUT(
         }
       }
     }
+
+    // --- MISSING CODE RESTORED HERE ---
+    const updatedProduct = await prisma.product.findUnique({
+      where: { id },
+      include: { variants: true },
+    });
+
+    return NextResponse.json(updatedProduct);
+  } catch (error) {
+    console.error("Error updating product:", error);
+    return NextResponse.json(
+      { error: "Failed to update product" },
+      { status: 500 }
+    );
+  }
+} 
+// --- END OF RESTORED BLOCK ---
 
 export async function DELETE(
   req: NextRequest,
