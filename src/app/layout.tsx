@@ -23,6 +23,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${poppins.variable}`} suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        
+        {/* --- CRITICAL PRODUCTION FIX: FORCE NETWORK FETCH FOR GLITCH FONT --- */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Rubik+Glitch&display=swap" rel="stylesheet" />
+        {/* ------------------------------------------------------------------ */}
+
         <script
           suppressHydrationWarning // Hydration fix
           dangerouslySetInnerHTML={{
