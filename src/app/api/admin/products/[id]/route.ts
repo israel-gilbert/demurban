@@ -83,58 +83,55 @@ export async function PUT(
       },
     });
 
-    // Update variants if provided
+   // Update variants if provided
     if (variants && Array.isArray(variants)) {
-      // Delete existing variants
-      await prisma.productVariant.deleteMany({
+      // Step 1: Soft-delete all existing variants (preserves historical order relations)
+      await prisma.productVariant.updateMany({
         where: { product_id: id },
+        data: { active: false, inventory_qty: 0 },
       });
 
-      // Create new variants
-      if (variants.length > 0) {
-        await prisma.productVariant.createMany({
-          data: variants.map((v: any) => ({
-            product_id: id,
-            size: v.size,
-            inventory_qty: Number(v.inventory_qty) || 0,
-            price_kobo: v.price_kobo ? Number(v.price_kobo) : null,
-            active: v.active !== undefined ? v.active : true,
-          })),
+      // Step 2: Reactivate or create based on size matching
+      for (const v of variants) {
+        const existingVariant = await prisma.productVariant.findFirst({
+          where: { product_id: id, size: v.size },
         });
+
+        if (existingVariant) {
+          await prisma.productVariant.update({
+            where: { id: existingVariant.id },
+            data: {
+              inventory_qty: Number(v.inventory_qty) || 0,
+              price_kobo: v.price_kobo ? Number(v.price_kobo) : null,
+              active: v.active !== undefined ? v.active : true,
+            },
+          });
+        } else {
+          await prisma.productVariant.create({
+            data: {
+              product_id: id,
+              size: v.size,
+              inventory_qty: Number(v.inventory_qty) || 0,
+              price_kobo: v.price_kobo ? Number(v.price_kobo) : null,
+              active: v.active !== undefined ? v.active : true,
+            },
+          });
+        }
       }
     }
-
-    // Return updated product with variants
-    const updatedProduct = await prisma.product.findUnique({
-      where: { id },
-      include: { variants: true },
-    });
-
-    return NextResponse.json(updatedProduct);
-  } catch (error) {
-    console.error("Error updating product:", error);
-    return NextResponse.json(
-      { error: "Failed to update product" },
-      { status: 500 }
-    );
-  }
-}
 
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await requireAdmin();
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const { id } = await params;
     await prisma.product.delete({
       where: { id },
     });
-
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting product:", error);

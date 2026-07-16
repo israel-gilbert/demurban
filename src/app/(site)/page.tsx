@@ -6,10 +6,12 @@ import CommunityShowcase from "@/components/CommunityShowcase";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { fetchProducts } from "@/lib/server-actions";
 import type { Product } from "@/lib/types";
+import HeroCarousel from "@/components/HeroCarousel";
+// 1. Import the custom slashed font component
+import UrbanText from "@/components/UrbanText";
 
-// 1. Force Next.js to render this page dynamically on every single refresh
+// Force Next.js to render this page dynamically on every single refresh
 export const revalidate = 0; 
-
 export default async function HomePage() {
   let products: Product[] = [];
   let error: string | null = null;
@@ -21,7 +23,7 @@ export default async function HomePage() {
     error = "Unable to load products at the moment";
   }
 
-  // 2. Helper function to shuffle array items randomly (Fisher-Yates shuffle)
+  // Helper function to shuffle array items randomly (Fisher-Yates shuffle)
   const shuffle = <T,>(array: T[]): T[] => {
     const arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -31,82 +33,34 @@ export default async function HomePage() {
     return arr;
   };
 
-  // 3. Shuffle all available products
+  // Shuffle all available products
   const shuffledProducts = shuffle(products);
 
-  // 4. Assign random slices directly (No tag filtering needed)
+  // Assign random slices directly (No tag filtering needed)
   const featured = shuffledProducts.slice(0, 8);     // Grab 8 completely random products
   const newArrivals = shuffledProducts.slice(0, 6);   // Grab 6 completely random products
   const heroProducts = shuffledProducts.slice(0, 7);  // Grab 7 completely random products
 
-  // IMPORTANT: priceRange is now in KOBO (₦ * 100)
-  const collections = [
-    {
-      id: "essentials",
-      name: "Core Essentials",
-      description: "Premium basics designed for everyday wear. Perfect foundation pieces for any wardrobe.",
-      priceRange: { min: 2500000, max: 8500000 }, // ₦25,000 — ₦85,000
-      image: "/images/dem6.png",
-      href: "/shop?tag=essentials",
-      tag: "For everyone",
-    },
-    {
-      id: "limited",
-      name: "Limited Editions",
-      description: "Exclusive pieces in limited quantities. Get them before they're gone.",
-      priceRange: { min: 3500000, max: 12000000 }, // ₦35,000 — ₦120,000
-      image: "/images/dem3.jpg",
-      href: "/shop?tag=limited",
-      tag: "Limited",
-    },
-    {
-      id: "trending",
-      name: "Trending Now",
-      description: "The hottest pieces right now. What everyone's wearing.",
-      priceRange: { min: 3000000, max: 10000000 }, // ₦30,000 — ₦100,000
-      image: "/images/dem0.jpg",
-      href: "/shop?tag=trending",
-      tag: "Trending",
-    },
-    {
-      id: "seasonal",
-      name: "Seasonal Collection",
-      description: "Fresh styles for the season. Stay ahead of the curve.",
-      priceRange: { min: 2800000, max: 11000000 }, // ₦28,000 — ₦110,000
-      image: "/images/dem4.jpg",
-      href: "/shop?tag=seasonal",
-    },
-    {
-      id: "bestsellers",
-      name: "Best Sellers",
-      description: "Customer favorites that keep coming back. Tested and loved by the community.",
-      priceRange: { min: 2000000, max: 9500000 }, // ₦20,000 — ₦95,000
-      image: "/images/dem10.jpg",
-      href: "/shop?sort=popular",
-    },
-  ];
-
   return (
     <div className="space-y-0">
-      {/* Hero Section - Full Width with Image Background */}
+      {/* Hero Section - UNCHANGED ORIGINAL BACKGROUND AND CONTAINER SIZES */}
       <AnimatedSection className="relative flex h-[600px] md:h-[700px] lg:h-[800px] flex-col items-center justify-center overflow-hidden bg-black">
-        {/* Background Image with Overlay */}
-        <div className="absolute inset-0">
-          <img src="/images/placeholder.jpeg" alt="DEM Urban Hero" className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/70"></div>
-        </div>
+        
+        {/* Carousel Component - Replaces the static image and gradient div */}
+        <HeroCarousel />
 
         {/* Hero Content - Centered Overlay */}
         <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 max-w-2xl">
-          {/* Headline */}
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6 font-[var(--font-oswald)] uppercase tracking-tight">
-            Where Taste Meets Identity
-          </h1>
+          
+          {/* 2. ONLY THE HEADING IS MODIFIED WITH RED/BLACK URBAN BORDER EFFECTS */}
+          <div className="w-full max-w-lg md:max-w-xl lg:max-w-2xl mb-6 mx-auto">
+            <UrbanText fontSize={75} letterSpacing={5}>
+              Demurban
+            </UrbanText>
+          </div>
 
-          {/* Description */}
           <p className="text-base md:text-lg text-white/90 mb-8 leading-relaxed max-w-xl">
-            Discover unisex streetwear designed for those who refuse to blend in. Premium pieces that celebrate culture, creativity, and
-            self-expression.
+            Discover unisex streetwear designed for those who refuse to blend in. Premium pieces that celebrate culture, creativity, and self-expression.
           </p>
         </div>
 
@@ -137,10 +91,12 @@ export default async function HomePage() {
       {newArrivals.length > 0 && (
         <AnimatedSection className="mx-auto w-full max-w-7xl px-4 py-16 md:px-6 md:py-20 lg:px-8">
           <div className="flex items-end justify-between gap-4 mb-8">
-            <div>
-              <h2 className="mt-2 text-2xl md:text-3xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">
+            
+            {/* 3. SUBSECTION HEADER MODIFIED WITH NON-GLOW SLICE LAYOUT */}
+            <div className="w-full max-w-xs md:max-w-sm mt-2">
+              <UrbanText fontSize={50} letterSpacing={4} glow={false}>
                 STAY DEM
-              </h2>
+              </UrbanText>
             </div>
 
           </div>
@@ -148,8 +104,6 @@ export default async function HomePage() {
           <ProductGrid products={newArrivals} />
         </AnimatedSection>
       )}
-
-      
 
       {/* Community Showcase */}
       <AnimatedSection>

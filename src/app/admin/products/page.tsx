@@ -2,6 +2,14 @@
 
 import { useEffect, useState } from "react";
 
+// --- URL-SAFE SLUG GENERATOR ---
+const createSlug = (text: string) => {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric chars with hyphens
+    .replace(/(^-|-$)+/g, "");   // Remove leading/trailing hyphens
+};
+
 interface ProductVariant {
   id: string;
   size: string;
@@ -44,7 +52,7 @@ export default function AdminProductsPage() {
     title: "",
     slug: "",
     description: "",
-    collection: "HOODIES", // 1. UPDATED: Updated initial default value to match new schema
+    collection: "HOODIES",
     price_kobo: "",
     compare_at_kobo: "",
     currency: "NGN",
@@ -81,7 +89,7 @@ export default function AdminProductsPage() {
       title: "",
       slug: "",
       description: "",
-      collection: "HOODIES", // 2. UPDATED: Resets form to a valid active collection
+      collection: "HOODIES",
       price_kobo: "",
       compare_at_kobo: "",
       currency: "NGN",
@@ -131,9 +139,13 @@ export default function AdminProductsPage() {
       ? formData.tags.split(",").map((t) => t.trim()).filter(Boolean)
       : [];
 
+    // --- ENFORCE URL-SAFE SLUG ---
+    // Uses the provided slug, or falls back to the title if slug is empty
+    const safeSlug = createSlug(formData.slug || formData.title);
+
     const body = {
       title: formData.title,
-      slug: formData.slug,
+      slug: safeSlug,
       description: formData.description || null,
       collection: formData.collection,
       price_kobo: parseInt(formData.price_kobo),
@@ -147,8 +159,8 @@ export default function AdminProductsPage() {
       images: formData.images,
       variants: formData.variants.map((v) => ({
         size: v.size,
-        inventory_qty: v.inventory_qty,
-        price_kobo: v.price_kobo || null,
+        inventory_qty: parseInt(v.inventory_qty) || 0,
+        price_kobo: v.price_kobo ? parseInt(v.price_kobo) : null,
         active: v.active,
       })),
     };
@@ -162,6 +174,9 @@ export default function AdminProductsPage() {
     if (res.ok) {
       setShowModal(false);
       fetchProducts();
+    } else {
+      const errorData = await res.json();
+      alert(errorData.error || "Failed to save product");
     }
   };
 
@@ -425,8 +440,8 @@ export default function AdminProductsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, slug: e.target.value })
                     }
-                    required
                     className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white"
+                    placeholder="Auto-generated from title if left empty"
                   />
                 </div>
                 <div className="md:col-span-2">
@@ -453,7 +468,6 @@ export default function AdminProductsPage() {
                     }
                     className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white"
                   >
-                    {/* 3. UPDATED: Dropdown options fully updated to match database enum values */}
                     <option value="HOODIES">Hoodies</option>
                     <option value="VARSITY_JACKET">Varsity Jacket</option>
                     <option value="POLO">Polo</option>

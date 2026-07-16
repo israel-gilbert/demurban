@@ -15,20 +15,26 @@ export interface FilterOptions {
   query?: string;
 }
 
+/**
+ * Fetch products and safely include variants to resolve size options
+ */
 export async function fetchProducts(opts?: { limit?: number }): Promise<Product[]> {
   const limit = opts?.limit ?? 12;
   const products = await prisma.product.findMany({
     where: { active: true },
+    include: { variants: true }, // Added variants relation
     orderBy: { created_at: "desc" },
     take: limit,
   });
   return products as unknown as Product[];
 }
 
+/**
+ * Fetch filtered products with dynamic criteria
+ */
 export async function fetchProductsWithFilters(filters: FilterOptions): Promise<Product[]> {
   const { collection, tag, minPrice, maxPrice, sort = "newest", query } = filters;
 
-  // Build Prisma where clause
   const where: Prisma.ProductWhereInput = { active: true };
 
   if (collection) {
@@ -55,7 +61,6 @@ export async function fetchProductsWithFilters(filters: FilterOptions): Promise<
     ];
   }
 
-  // Build orderBy
   let orderBy: Prisma.ProductOrderByWithRelationInput = { created_at: "desc" };
   switch (sort) {
     case "price-asc":
@@ -76,12 +81,16 @@ export async function fetchProductsWithFilters(filters: FilterOptions): Promise<
 
   const products = await prisma.product.findMany({
     where,
+    include: { variants: true }, // Ensure variants carry over for filters
     orderBy,
   });
 
   return products as unknown as Product[];
 }
 
+/**
+ * Search products via direct SQL matches
+ */
 export async function searchProducts(query: string): Promise<Product[]> {
   if (!query || query.trim().length < 2) {
     return [];
@@ -107,6 +116,9 @@ export async function searchProducts(query: string): Promise<Product[]> {
   return products as unknown as Product[];
 }
 
+/**
+ * Fetch products by specific collection or fallback tags
+ */
 export async function fetchProductsByCollection(collection: string): Promise<Product[]> {
   const where: Record<string, unknown> = { active: true };
   const key = (collection ?? "all").toLowerCase();
@@ -116,27 +128,42 @@ export async function fetchProductsByCollection(collection: string): Promise<Pro
   } else if (key === "archive" || key === "archived") {
     where.collection = "ARCHIVE";
   } else if (key !== "all") {
-    // Non-core filters are treated as tag-based filters.
     where.tags = { has: key };
   }
 
   const products = await prisma.product.findMany({
     where,
+    include: { variants: true }, // Ensures page collections have size/quantity access
     orderBy: { created_at: "desc" },
   });
 
   return products as unknown as Product[];
 }
 
-
+/**
+ * Safe, case-insensitive fetch product by slug
+ */
 export async function fetchProductBySlug(slug: string): Promise<Product | null> {
   const product = await prisma.product.findFirst({
-    where: { slug, active: true },
-    include: { variants: true },
+    where: {
+      slug: {
+        equals: slug,
+        mode: "insensitive", // Prevents case-mismatches in URL paths from causing 404s
+      },
+      active: true,
+    },
+    include: {
+      variants: {
+        where: { active: true },
+      },
+    },
   });
   return (product as unknown as Product) ?? null;
 }
 
+/**
+ * Extract active filter tags
+ */
 export async function getAvailableTags(): Promise<string[]> {
   const sql = getSql();
   const result = await sql`
@@ -148,6 +175,9 @@ export async function getAvailableTags(): Promise<string[]> {
   return (result as { tag: string }[]).map((r) => r.tag);
 }
 
+/**
+ * Determine dynamic price ranges for UI sliders
+ */
 export async function getPriceRange(): Promise<{ min: number; max: number }> {
   const sql = getSql();
   const result = await sql`

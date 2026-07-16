@@ -16,6 +16,7 @@
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/client": "^6.16.1",
+    "@upstash/redis": "^1.38.0",
     "@vercel/analytics": "^2.0.1",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.10.0",

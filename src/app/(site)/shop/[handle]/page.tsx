@@ -10,13 +10,17 @@ import { ArrowLeft } from "lucide-react";
 export const revalidate = 3600;
 
 interface ProductPageProps {
-  params: Promise<{ slug: string }>; // 1. Updated from 'handle' to 'slug'
+  // 1. MUST match the folder name exactly (e.g., [handle])
+  params: Promise<{ handle: string }>; 
 }
 
 // Resolve dynamic metadata for SEO
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const { slug } = await params; // 2. Updated to destruct 'slug'
-  const product = await fetchProductBySlug(slug);
+  const { handle } = await params;
+  
+  if (!handle) return { title: "Product Not Found | Demurban" };
+  
+  const product = await fetchProductBySlug(handle);
 
   if (!product) {
     return {
@@ -34,10 +38,15 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     },
   };
 }
+// src/app/(site)/shop/[handle]/page.tsx
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const { slug } = await params; // 3. Updated to destruct 'slug'
-  const product = await fetchProductBySlug(slug);
+  const { handle } = await params;
+  console.log("DEBUG: Looking for product with handle:", handle);
+
+  const product = handle ? await fetchProductBySlug(handle) : null;
+  console.log("DEBUG: Product result:", product);
+
 
   if (!product) {
     return (
@@ -61,7 +70,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
     ? variants.some((v: any) => v.active && v.inventory_qty > 0)
     : product.inventory_qty > 0;
 
-  // Optimized Related Products querying to guarantee 4 distinct items
   const rawRelatedProducts = await fetchProducts({ limit: 10 });
   const related = rawRelatedProducts
     .filter((p) => p.id !== product.id)
@@ -77,10 +85,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </Link>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-2">
-        {/* Dynamic Image Gallery with State */}
         <ProductGallery images={product.images || []} title={product.title} />
 
-        {/* Product Info */}
         <div>
           <h1 className="mt-3 text-3xl md:text-4xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-50 leading-tight">
             {product.title}
@@ -116,7 +122,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
             {product.description ?? "Premium streetwear designed for those who refuse to blend in."}
           </p>
 
-          {/* Add to Cart with Size Selector */}
           <div className="mt-8">
             <AddToCartButton
               product={{
@@ -132,7 +137,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
             />
           </div>
 
-          {/* Details */}
           <div className="mt-10 rounded-3xl border border-black/5 dark:border-white/10 bg-neutral-100 dark:bg-neutral-900 p-6 md:p-7">
             <h2 className="text-sm font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">Details</h2>
             <ul className="mt-4 space-y-3 text-sm text-neutral-600 dark:text-neutral-400">
@@ -148,7 +152,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </ul>
           </div>
 
-          {/* Info Grid */}
           <div className="mt-6 space-y-4 rounded-3xl border border-black/5 dark:border-white/10 bg-neutral-100 dark:bg-neutral-900 p-6 md:p-7">
             <div className="text-sm">
               <p className="font-semibold text-neutral-900 dark:text-neutral-50">Secure Payments</p>
@@ -166,7 +169,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </div>
       </div>
 
-      {/* Related Products */}
       {related.length > 0 && (
         <section className="mt-16 md:mt-20">
           <div className="mb-8 flex items-end justify-between gap-4">

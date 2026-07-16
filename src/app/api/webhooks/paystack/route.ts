@@ -4,17 +4,6 @@ import { logSecurityEvent } from "@/lib/security";
 import { sendOrderConfirmationEmail } from "@/lib/email";
 import crypto from "crypto";
 
-/**
- * Paystack Webhook Handler
- * 
- * This is the PRIMARY payment processing endpoint.
- * Webhooks are more reliable than callbacks because:
- * 1. They work even if the user closes their browser
- * 2. They are server-to-server, reducing tampering risk
- * 3. Paystack retries failed webhook deliveries
- * 
- * CRITICAL: Always verify the webhook signature to ensure it's from Paystack
- */
 
 export const dynamic = "force-dynamic";
 
