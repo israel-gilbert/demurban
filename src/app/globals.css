@@ -1,7 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik+Glitch&display=swap');
 @import "tailwindcss";
 
 /* Tailwind v4: make `dark:` use the `.dark` class (not OS preference) */
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* src/app/globals.css */
+@tailwind components;
+@tailwind utilities;
+
+/* The exact Google Fonts syntax */
+.rubik-glitch-regular {
+  font-family: "Rubik Glitch", system-ui !important;
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* ... rest of your existing global css ... */
 
 /* Light theme (default) */
 :root {

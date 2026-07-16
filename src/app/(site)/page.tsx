@@ -7,8 +7,7 @@ import { AnimatedSection } from "@/components/AnimatedSection";
 import { fetchProducts } from "@/lib/server-actions";
 import type { Product } from "@/lib/types";
 import HeroCarousel from "@/components/HeroCarousel";
-// 1. Import the custom slashed font component
-import UrbanText from "@/components/UrbanText";
+
 
 // Force Next.js to render this page dynamically on every single refresh
 export const revalidate = 0; 
@@ -52,13 +51,12 @@ export default async function HomePage() {
         {/* Hero Content - Centered Overlay */}
         <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 max-w-2xl">
           
-          {/* 2. ONLY THE HEADING IS MODIFIED WITH RED/BLACK URBAN BORDER EFFECTS */}
-          <div className="w-full max-w-lg md:max-w-xl lg:max-w-2xl mb-6 mx-auto">
-            <UrbanText fontSize={75} letterSpacing={5}>
-              Demurban
-            </UrbanText>
-          </div>
-
+  {/* 2. HEADING MODIFIED WITH PURE RUBIK GLITCH LOOK */}
+<div className="w-full max-w-lg md:max-w-xl lg:max-w-2xl mb-6 mx-auto text-center">
+  <h1 className="rubik-glitch-regular text-5xl md:text-[75px] tracking-[5px] uppercase leading-tight text-white drop-shadow-sm">
+    WHERE TASTE MEETS IDENTITY
+  </h1>
+</div>
           <p className="text-base md:text-lg text-white/90 mb-8 leading-relaxed max-w-xl">
             Discover unisex streetwear designed for those who refuse to blend in. Premium pieces that celebrate culture, creativity, and self-expression.
           </p>
@@ -92,12 +90,12 @@ export default async function HomePage() {
         <AnimatedSection className="mx-auto w-full max-w-7xl px-4 py-16 md:px-6 md:py-20 lg:px-8">
           <div className="flex items-end justify-between gap-4 mb-8">
             
-            {/* 3. SUBSECTION HEADER MODIFIED WITH NON-GLOW SLICE LAYOUT */}
-            <div className="w-full max-w-xs md:max-w-sm mt-2">
-              <UrbanText fontSize={50} letterSpacing={4} glow={false}>
-                STAY DEM
-              </UrbanText>
-            </div>
+{/* 3. SUBSECTION HEADER MODIFIED WITH PURE RUBIK GLITCH LOOK */}
+<div className="w-full max-w-xs md:max-w-sm mt-2">
+  <h2 className="rubik-glitch-regular text-[40px] md:text-[50px] tracking-[4px] uppercase text-neutral-900 dark:text-white leading-none">
+    STAY DEM
+  </h2>
+</div>
 
           </div>
 

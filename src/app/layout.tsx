@@ -1,24 +1,14 @@
 import type { Metadata } from "next";
-import { Inter, Oswald, Playfair_Display } from "next/font/google";
+import { Poppins } from "next/font/google"; // Removed Rubik_Glitch
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
-const inter = Inter({
+const poppins = Poppins({
   subsets: ["latin"],
-  variable: "--font-inter",
-});
-
-const oswald = Oswald({
-  subsets: ["latin"],
-  variable: "--font-oswald",
-});
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  weight: ["700", "800", "900"],
-  variable: "--font-serif",
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-poppins",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -29,7 +19,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${oswald.variable} ${playfair.variable}`} suppressHydrationWarning>
+    // Removed rubikGlitch.variable from HTML tag
+    <html lang="en" className={`${poppins.variable}`} suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script
@@ -47,7 +38,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="min-h-dvh bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-50 antialiased font-sans">
+      {/* 4. Enforce font-poppins globally while preserving theme-aware background/text colors */}
+      <body className="font-poppins min-h-dvh bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-50 antialiased selection:bg-neutral-900 selection:text-white dark:selection:bg-white dark:selection:text-neutral-900">
         <ThemeProvider>{children}</ThemeProvider>
         <Analytics />
       </body>
