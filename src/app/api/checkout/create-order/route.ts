@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fraud detection: email velocity
-    const fraudSignals = checkFraudSignals(clientIp, parsed.email);
+   const fraudSignals = await checkFraudSignals(clientIp, parsed.email);
     recordPaymentAttempt(clientIp, parsed.email);
 
     if (fraudSignals.isHighRisk) {
