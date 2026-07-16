@@ -51,9 +51,12 @@ export default async function HomePage() {
         {/* Hero Content - Centered Overlay */}
         <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 max-w-2xl">
           
-  {/* 2. HEADING MODIFIED WITH PURE RUBIK GLITCH LOOK */}
+  {/* 2. HEADING MODIFIED WITH NUCLEAR INLINE STYLE */}
 <div className="w-full max-w-lg md:max-w-xl lg:max-w-2xl mb-6 mx-auto text-center">
-  <h1 className="rubik-glitch-regular text-5xl md:text-[75px] tracking-[5px] uppercase leading-tight text-white drop-shadow-sm">
+  <h1 
+    className="text-5xl md:text-[75px] tracking-[5px] uppercase leading-tight text-white drop-shadow-sm"
+    style={{ fontFamily: "'Rubik Glitch Raw', system-ui" }}
+  >
     WHERE TASTE MEETS IDENTITY
   </h1>
 </div>
@@ -90,9 +93,12 @@ export default async function HomePage() {
         <AnimatedSection className="mx-auto w-full max-w-7xl px-4 py-16 md:px-6 md:py-20 lg:px-8">
           <div className="flex items-end justify-between gap-4 mb-8">
             
-{/* 3. SUBSECTION HEADER MODIFIED WITH PURE RUBIK GLITCH LOOK */}
+{/* 3. SUBSECTION HEADER MODIFIED WITH NUCLEAR INLINE STYLE */}
 <div className="w-full max-w-xs md:max-w-sm mt-2">
-  <h2 className="rubik-glitch-regular text-[40px] md:text-[50px] tracking-[4px] uppercase text-neutral-900 dark:text-white leading-none">
+  <h2 
+    className="text-[40px] md:text-[50px] tracking-[4px] uppercase text-neutral-900 dark:text-white leading-none"
+    style={{ fontFamily: "'Rubik Glitch Raw', system-ui" }}
+  >
     STAY DEM
   </h2>
 </div>
