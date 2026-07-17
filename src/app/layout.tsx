@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google"; // Removed Rubik_Glitch
+import '@fontsource/rubik-glitch';
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";

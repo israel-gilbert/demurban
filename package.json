@@ -14,6 +14,7 @@
     "db:import:csv": "node scripts/import-products-from-csv.mjs"
   },
   "dependencies": {
+    "@fontsource/rubik-glitch": "^5.2.7",
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/client": "^6.16.1",
     "@upstash/redis": "^1.38.0",

@@ -55,7 +55,7 @@ export default async function HomePage() {
 <div className="w-full max-w-lg md:max-w-xl lg:max-w-2xl mb-6 mx-auto text-center">
   <h1 
     className="text-5xl md:text-[75px] tracking-[5px] uppercase leading-tight text-white drop-shadow-sm"
-    style={{ fontFamily: "'Rubik Glitch Raw', system-ui" }}
+    style={{ fontFamily: "'Rubik Glitch', system-ui" }}
   >
     WHERE TASTE MEETS IDENTITY
   </h1>
@@ -97,7 +97,7 @@ export default async function HomePage() {
 <div className="w-full max-w-xs md:max-w-sm mt-2">
   <h2 
     className="text-[40px] md:text-[50px] tracking-[4px] uppercase text-neutral-900 dark:text-white leading-none"
-    style={{ fontFamily: "'Rubik Glitch Raw', system-ui" }}
+    style={{ fontFamily: "'Rubik Glitch', system-ui" }}
   >
     STAY DEM
   </h2>

@@ -4,23 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 1. BYPASS NEXT.JS COMPILER: FETCH RAW WOFF2 FILE FROM INDEPENDENT CDN */
-@font-face {
-  font-family: 'Rubik Glitch Raw';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('https://cdn.jsdelivr.net/npm/@fontsource/rubik-glitch@5.0.8/files/rubik-glitch-latin-400-normal.woff2') format('woff2');
-}
-
-/* 2. BIND IT TO YOUR CLASS */
-.rubik-glitch-regular {
-  font-family: 'Rubik Glitch Raw', system-ui !important;
-  font-weight: 400;
-  font-style: normal;
-}
-
-/* ... rest of your existing global css ... */
 
 /* Light theme (default) */
 :root {
